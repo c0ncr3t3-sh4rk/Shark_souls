@@ -48,3 +48,9 @@ Para evitar los temidos conflictos de mezcla (*merge conflicts*) en Unity:
 1. **Antes de empezar a programar:** Abre GitHub Desktop y dale a **Fetch origin** (y luego **Pull** si tu amigo ha subido algo). Trabaja siempre sobre la versión más nueva.
 2. **Evitar tocar la misma escena:** No abráis ni modifiquéis la misma escena (*.unity*) al mismo tiempo. Es mejor trabajar con escenas separadas o usar **Prefabs** para vuestros scripts y objetos, ya que los archivos de escena de Unity son muy difíciles de fusionar si se pisan.
 3. **Al terminar tu sesión:** Abre GitHub Desktop, escribe un título breve para tus cambios en la esquina inferior izquierda (ej. *"Añadido script de movimiento"*), haz clic en **Commit to main** y finalmente en **Push origin**.
+
+
+# FACTS
+## tiene que haber combo de bajas
+## logros
+## parry coletazo
