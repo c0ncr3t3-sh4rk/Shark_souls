@@ -3,13 +3,14 @@
 # Get latest sign-offs and recommendations:
 # https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
-/[L]ibrary/
-/[T]emp/
-/[O]bj/
-/[B]uild/
-/[B]uilds/
-/[L]ogs/
-/[U]serSettings/
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+.vscode/
 
 # Memory dumps
 *.log
