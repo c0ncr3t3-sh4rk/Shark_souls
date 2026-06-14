@@ -36,6 +36,23 @@ public class MovimientoTiburon : MonoBehaviour
         {
             transform.eulerAngles = new Vector3(0f, 0f, 0f);
         }
+
+        if (inputMovimiento.y > 0f && inputMovimiento.x < 0f)
+        {
+            transform.eulerAngles = new Vector3(0f, 0f, -45f);
+        }
+        else if (inputMovimiento.y > 0f && inputMovimiento.x > 0f)
+        {
+            transform.eulerAngles = new Vector3(0f, 180f, -45f);
+        }
+        else if (inputMovimiento.y < 0f && inputMovimiento.x < 0f)
+        {
+            transform.eulerAngles = new Vector3(0f, 0f, 45f);
+        }
+        else if (inputMovimiento.y < 0f && inputMovimiento.x > 0f)
+        {
+            transform.eulerAngles = new Vector3(0f, 180f, 45f);
+        }
     }
 
     public Vector2 ObtenerDireccionInput()
