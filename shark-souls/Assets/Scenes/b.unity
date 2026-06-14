@@ -273,6 +273,8 @@ GameObject:
   - component: {fileID: 390259794}
   - component: {fileID: 390259797}
   - component: {fileID: 390259796}
+  - component: {fileID: 390259798}
+  - component: {fileID: 390259799}
   m_Layer: 0
   m_Name: barracuda2_0
   m_TagString: Untagged
@@ -394,7 +396,57 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovimientoAgresivo
   velocidad: 4.5
-  rangoDeteccion: 7
+  rangoDeteccion: 20
+--- !u!114 &390259798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 390259793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e78be2cbac0248146a458db6abc0c3ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VidaEnemigo
+  vidaMaxima: 15
+--- !u!70 &390259799
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 390259793}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.620255, y: -0.031159522}
+  m_Size: {x: 2.7783606, y: 0.79936135}
+  m_Direction: 1
 --- !u!1 &465189663
 GameObject:
   m_ObjectHideFlags: 0
@@ -2385,7 +2437,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DashTiburon
   fuerzaDash: 35
   duracionDash: 0.25
-  tiempoEsperaDash: 1
+  tiempoEsperaDash: 0.5
   colorFantasma: {r: 0.018912425, g: 0.030314133, b: 0.16037738, a: 0.6}
   tiempoVidaFantasma: 0.4
   tiempoEntreFantasmas: 0.02

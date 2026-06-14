@@ -15,6 +15,7 @@ public class VidaEnemigo : MonoBehaviour
         vidaActual -= cantidad;
         Debug.Log(gameObject.name + " ha recibido daño. Vida restante: " + vidaActual);
 
+        //Sangre();
         // Efecto cutre de parpadeo rojo al recibir daño
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null) StartCoroutine(EfectoDano(sr));
@@ -25,6 +26,15 @@ public class VidaEnemigo : MonoBehaviour
         }
     }
 
+    /*private void Sangre()
+    {
+        if (efectoSangrePrefab != null)
+        {
+            GameObject sangre = Instantiate(efectoSangrePrefab, transform.position, transform.rotation);
+            Destroy(sangre, 2f); 
+        }
+    }*/
+
     private System.Collections.IEnumerator EfectoDano(SpriteRenderer sr)
     {
         sr.color = Color.red;
@@ -32,10 +42,20 @@ public class VidaEnemigo : MonoBehaviour
         sr.color = Color.white;
     }
 
-    private void MonaMuerte()
+    [Header("Efectos de Muerte")]
+    [SerializeField] private GameObject manchaSangrePrefab; // <--- Ponemos la casilla para la mancha fija
+
+private void MonaMuerte()
+{
+    // Si tenemos configurada la mancha fija de muerte...
+    if (manchaSangrePrefab != null)
     {
-        // Aquí podréis meter partículas de sangre de mentira más adelante
-        Debug.Log(gameObject.name + " HA MUERTO.");
-        Destroy(gameObject);
+        // La instanciamos en el sitio exacto donde ha muerto el pez
+        // Usamos Quaternion.identity para que no herede rotaciones raras del pez y se quede recta
+        Instantiate(manchaSangrePrefab, transform.position, Quaternion.identity);
     }
+
+    Debug.Log(gameObject.name + " HA MUERTO.");
+    Destroy(gameObject); // El pez desaparece, pero la mancha se queda flotando independiente
+}
 }
