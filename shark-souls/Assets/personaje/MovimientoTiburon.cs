@@ -3,18 +3,14 @@ using UnityEngine.InputSystem;
 
 public class MovimientoTiburon : MonoBehaviour
 {
-    [SerializeField] private float velocidad = 5f; 
+    [SerializeField] private float velocidad = 15f; 
 
     private Rigidbody2D rb;
-    // Esto ahora es público para que el script de ataque lo pueda leer
-    public SpriteRenderer spriteRenderer { get; private set; } 
-
     private Vector2 inputMovimiento;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     public void OnMove(InputValue value)
@@ -30,13 +26,15 @@ public class MovimientoTiburon : MonoBehaviour
 
     private void GirarSprite()
     {
-        if (inputMovimiento.x < 0f)
+        // Si pulsas la A (izquierda), rotamos el objeto 180 grados en el eje Y
+        if (inputMovimiento.x > 0f)
         {
-            spriteRenderer.flipX = false; 
+            transform.eulerAngles = new Vector3(0f, 180f, 0f);
         }
-        else if (inputMovimiento.x > 0f)
+        // Si pulsas la D (derecha), restauramos la rotación original (0 grados)
+        else if (inputMovimiento.x < 0f)
         {
-            spriteRenderer.flipX = true; 
+            transform.eulerAngles = new Vector3(0f, 0f, 0f);
         }
     }
 }

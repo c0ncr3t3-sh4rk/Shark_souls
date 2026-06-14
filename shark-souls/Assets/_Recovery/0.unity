@@ -204,7 +204,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -226,7 +226,7 @@ GameObject:
   - component: {fileID: 1843803303}
   - component: {fileID: 1843803306}
   m_Layer: 0
-  m_Name: shark.png
+  m_Name: Sin nombre_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -281,7 +281,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 8861480726252175340, guid: cbfa0ea14ac01d843a4684f8c51bc41a, type: 3}
+  m_Sprite: {fileID: 8586609412416501626, guid: cbfa0ea14ac01d843a4684f8c51bc41a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -318,7 +318,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b547f27eb21ae8447bb209700e0b74cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovimientoTiburon
-  velocidad: 15
+  velocidad: 5
 --- !u!114 &1843803304
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -388,12 +388,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d8f2faf020c262478eff0e5d74cfd42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtaqueTiburon
-  spriteNormal: {fileID: 8861480726252175340, guid: cbfa0ea14ac01d843a4684f8c51bc41a, type: 3}
+  spriteNormal: {fileID: 8586609412416501626, guid: cbfa0ea14ac01d843a4684f8c51bc41a, type: 3}
   spriteMordisco: {fileID: 1178231847908404071, guid: cd49aae877d531d49b81fa663487e227, type: 3}
   duracionMordisco: 0.15
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1843803302}
   - {fileID: 519420032}
+  - {fileID: 1843803302}
