@@ -1,80 +1,141 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic; // 👈 OBLIGATORIO: Para usar listas de corazones
 
 public class SaludTiburon : MonoBehaviour
 {
     [Header("Configuración de Vida")]
-    [SerializeField] private int vidasMaximas = 3;
+    [SerializeField] private int vidasMaximas = 3; 
     private int vidasActuales;
 
-    [Header("Efecto de Daño (UI)")]
-    // Arrastra aquí el objeto 'FlashRojo' desde el inspector
+    [Header("Conexión con la GUI (Corazones)")]
+    // Arrastra aquí el objeto 'ContenedorCorazones'
+    [SerializeField] private Transform contenedorCorazones; 
+    // Arrastra aquí el archivo azul 'Corazon_Prefab' desde tus carpetas
+    [SerializeField] private GameObject corazonPrefab; 
+
+    // Lista interna para guardar los corazones que se vayan creando
+    private List<GameObject> listaCorazones = new List<GameObject>();
+
+    [Header("Frames de Invencibilidad (I-Frames)")]
+    [SerializeField] private float duracionInvencibilidadHit = 1.5f; 
+    private bool esInvencible = false;
+
+    [Header("Efectos Visuales (UI y Sprite)")]
     [SerializeField] private GameObject pantallaRoja; 
     [SerializeField] private float duracionFlash = 0.2f;
+    private SpriteRenderer spriteRenderer;
 
     private void Awake()
     {
-        // Al empezar el juego, el tiburón inicia con la vida al máximo
         vidasActuales = vidasMaximas;
-        
-        // Nos aseguramos de que la pantalla roja empiece apagada
-        if (pantallaRoja != null)
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (pantallaRoja != null) pantallaRoja.SetActive(false);
+
+        // Generamos los corazones visuales al iniciar
+        CrearCorazonesUI();
+    }
+
+    public void SetInvencible(bool estado)
+    {
+        if (!esInvencible || estado == false)
         {
-            pantallaRoja.SetActive(false);
+            esInvencible = estado;
         }
     }
 
-    // Este método nativo de Unity detecta cuando algo entra en nuestro "Is Trigger"
-    // 1. PARA OBJETOS FANTASMAS (Como el Círculo con 'Is Trigger' activado)
-    private void OnTriggerEnter2D(Collider2D oponente)
+    public void RecibirDano(int cantidadDano)
     {
-        // Si el objeto contiene "Circle" o "Spike" en el nombre
-        if (oponente.gameObject.name.Contains("Circle") || oponente.gameObject.name.Contains("Spike"))
-        {
-            RecibirDano();
-        }
-    }
+        if (esInvencible) return;
 
-    // 2. PARA OBJETOS SÓLIDOS (Como el Triángulo con 'Is Trigger' desactivado)
-    private void OnCollisionEnter2D(Collision2D colision)
-    {
-        // Comprobamos si el objeto sólido que chocamos contiene "Spike" o "Triangulo" en su nombre
-        if (colision.gameObject.name.Contains("Spike"))
-        {
-            RecibirDano();
-        }
-    }
+        vidasActuales -= cantidadDano;
+        Debug.Log($"¡Tiburón golpeado! Vidas restantes: {vidasActuales}");
 
-    private void RecibirDano()
-    {
-        vidasActuales--;
-        Debug.Log("¡El tiburón fue golpeado! Vidas restantes: " + vidasActuales);
+        // Actualizamos los corazones visuales inmediatamente
+        ActualizarCorazonesUI();
 
-        // Activamos el efecto visual en paralelo usando una Corrutina
-        if (pantallaRoja != null)
-        {
-            StartCoroutine(EfectoPantallaRoja());
-        }
+        if (pantallaRoja != null) StartCoroutine(EfectoPantallaRoja());
 
-        // Si te quedas sin vidas
         if (vidasActuales <= 0)
         {
             Muerte();
+            return; 
+        }
+
+        StartCoroutine(IFrames());
+    }
+
+    // 🎯 NUEVO MÉTODO: Dibuja los corazones iniciales en pantalla de forma dinámica
+    private void CrearCorazonesUI()
+    {
+        // Limpiamos por si acaso
+        foreach (GameObject corazon in listaCorazones) Destroy(corazon);
+        listaCorazones.Clear();
+
+        // Creamos tantos clones del corazón como vidas máximas tenga
+        for (int i = 0; i < vidasMaximas; i++)
+        {
+            GameObject nuevoCorazon = Instantiate(corazonPrefab, contenedorCorazones);
+            listaCorazones.Add(nuevoCorazon);
         }
     }
 
-    // Proceso asíncrono temporal para encender y apagar el flash rojo
+    // 🎯 NUEVO MÉTODO: Apaga los corazones perdidos
+    private void ActualizarCorazonesUI()
+    {
+        for (int i = 0; i < listaCorazones.Count; i++)
+        {
+            // Si el índice es menor que nuestras vidas actuales, el corazón se enciende.
+            // Si sufrimos daño, los corazones del final se apagarán automáticamente.
+            if (i < vidasActuales)
+            {
+                listaCorazones[i].SetActive(true);
+            }
+            else
+            {
+                listaCorazones[i].SetActive(false);
+            }
+        }
+    }
+
     private IEnumerator EfectoPantallaRoja()
     {
-        pantallaRoja.SetActive(true); // Enciende el color rojo
-        yield return new WaitForSeconds(duracionFlash); // Espera el tiempo configurado
-        pantallaRoja.SetActive(false); // Apaga el color rojo
+        pantallaRoja.SetActive(true);
+        yield return new WaitForSeconds(duracionFlash);
+        pantallaRoja.SetActive(false);
+    }
+
+    private IEnumerator IFrames()
+    {
+        esInvencible = true;
+        float tiempoPasado = 0f;
+        float intervaloParpadeo = 0.1f; 
+
+        while (tiempoPasado < duracionInvencibilidadHit)
+        {
+            if (spriteRenderer != null)
+            {
+                Color c = spriteRenderer.color;
+                c.a = (c.a == 1f) ? 0.3f : 1f; 
+                spriteRenderer.color = c;
+            }
+
+            yield return new WaitForSeconds(intervaloParpadeo);
+            tiempoPasado += intervaloParpadeo;
+        }
+
+        if (spriteRenderer != null)
+        {
+            Color c = spriteRenderer.color;
+            c.a = 1f;
+            spriteRenderer.color = c;
+        }
+        esInvencible = false;
     }
 
     private void Muerte()
     {
-        Debug.Log("¡Game Over! El tiburón ha muerto.");
-        // Aquí puedes destruir el objeto, reiniciar el nivel o congelar el juego
+        Debug.Log("¡Game Over!");
         Destroy(gameObject); 
     }
 }
