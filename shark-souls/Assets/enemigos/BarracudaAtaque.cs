@@ -28,10 +28,11 @@ public class BarracudaAtaque : MonoBehaviour
     [SerializeField] private float tiempoDeCarga = 1.2f; 
     [SerializeField] private float velocidadEmbestida = 15f; 
     [SerializeField] private float duracionMaximaEmbestida = 0.7f; 
-    [SerializeField] private float cooldownAtaque = 3f; 
+    [SerializeField] private float cooldownAtaque = 3f;
+    [SerializeField] private float cooldownTrasAcertarHit = 0.8f;
     [SerializeField] private int danoAlJugador = 1;
-    [SerializeField] private float radioColisionAtaque = 0.5f; // Tamaño del mordisco
-    [SerializeField] private float desfaseHocicoDelantero = 0.8f; // 👁️ Mueve el círculo hacia la boca (Ajusta según tu sprite)
+    [SerializeField] private float radioColisionAtaque = 0.5f; 
+    [SerializeField] private float desfaseHocicoDelantero = 0.8f; 
 
     [Header("Configuración de Aturdimiento (Stun)")]
     [SerializeField] private float stunNormal = 1.5f; 
@@ -95,7 +96,6 @@ public class BarracudaAtaque : MonoBehaviour
                 velocidadDeseadaFrame = direccionFijadaEmbestida * velocidadEmbestida;
                 RotarHaciaDireccionInstantanea(direccionFijadaEmbestida);
                 
-                // Chequeo de impactos continuo en el hocico desplazado
                 ChequearImpactosEmbestida();
                 break;
 
@@ -142,42 +142,38 @@ public class BarracudaAtaque : MonoBehaviour
 
         if (estadoActual == EstadoEnemigo.Embestiendo)
         {
-            StartCoroutine(EntrarEnStun(false));
+            StartCoroutine(EntrarEnStun(false, false));
         }
     }
 
     private void ChequearImpactosEmbestida()
     {
-        // 🎯 Calculamos la posición del hocico basándonos en la dirección real hacia donde mira el Transform
         Vector2 posicionHocico = (Vector2)transform.position + ((Vector2)transform.right * desfaseHocicoDelantero);
-
         Collider2D[] impactos = Physics2D.OverlapCircleAll(posicionHocico, radioColisionAtaque);
         
         foreach (var col in impactos)
         {
             if (col.gameObject == gameObject) continue;
 
-            // 1. Daño al Jugador
             SaludTiburon vidaTiburon = col.GetComponent<SaludTiburon>();
             if (vidaTiburon != null)
             {
                 vidaTiburon.RecibirDano(danoAlJugador);
                 StopAllCoroutines();
-                StartCoroutine(EntrarEnStun(false)); 
+                StartCoroutine(EntrarEnStun(false, true)); 
                 return;
             }
 
-            // 2. Choque contra Paredes
             if (col.gameObject.layer == LayerMask.NameToLayer("Paredes"))
             {
                 StopAllCoroutines();
-                StartCoroutine(EntrarEnStun(true)); 
+                StartCoroutine(EntrarEnStun(true, false)); 
                 return;
             }
         }
     }
 
-    private IEnumerator EntrarEnStun(bool porPared)
+    private IEnumerator EntrarEnStun(bool porPared, bool golpeoAlJugador)
     {
         estadoActual = EstadoEnemigo.Aturdido;
         rb.linearVelocity = Vector2.zero; 
@@ -188,7 +184,9 @@ public class BarracudaAtaque : MonoBehaviour
 
         estadoActual = EstadoEnemigo.Cooldown;
         if (spriteNormal != null) spriteRenderer.sprite = spriteNormal;
-        yield return new WaitForSeconds(cooldownAtaque);
+
+        float cooldownFinal = golpeoAlJugador ? cooldownTrasAcertarHit : cooldownAtaque;
+        yield return new WaitForSeconds(cooldownFinal);
 
         estadoActual = EstadoEnemigo.Cazando;
         StartCoroutine(RutinaPensamientoAtaque());
@@ -219,7 +217,6 @@ public class BarracudaAtaque : MonoBehaviour
             transform.localRotation = Quaternion.Euler(0f, 0f, anguloZ);
     }
 
-    // 👁️ REPARADO: Ahora sí calcula la evasión basándose en el triple sensor real (Frontal, Izquierda, Derecha)
     private Vector2 EvaluarRutaYEsquivar(Vector2 dirBase)
     {
         Vector2 dirFrontal = dirBase;
@@ -252,22 +249,18 @@ public class BarracudaAtaque : MonoBehaviour
         return new Vector2((cos * vector.x) - (sin * vector.y), (sin * vector.x) + (cos * vector.y));
     }
 
-    // 🔴 REPARADO: Dibuja los 3 láseres de evasión y posiciona correctamente el hocico verde delante
     private void OnDrawGizmosSelected()
     {
-        // Rangos de Caza y Ataque
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, rangoPersecucionJugador);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, rangoAtaqueJugador);
 
-        // Posición calculada del hocico delantero según la rotación del pez
         Vector2 posicionHocicoGizmo = (Vector2)transform.position + ((Vector2)transform.right * desfaseHocicoDelantero);
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(posicionHocicoGizmo, radioColisionAtaque);
 
-        // Reconstrucción del abanico de 3 láseres visuales amarillos
-        Gizmos.color = Color.yellow;
+        Gizmos.color = Color.cyan;
         Vector2 dirBase = direccionDeseadaFinal == Vector2.zero ? (Vector2)transform.right : direccionDeseadaFinal;
         Vector2 dirFrontal = dirBase;
         Vector2 dirIzquierda = GirarVector(dirBase, anguloAperturaSensores);

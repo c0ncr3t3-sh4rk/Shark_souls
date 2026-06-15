@@ -6,6 +6,7 @@ public class MinaSubmarina : MonoBehaviour
     [Header("Configuración de la Mina")]
     [SerializeField] private float tiempoAntesDeExplotar = 2f; 
     [SerializeField] private float radioDeExplosion = 2.5f; 
+    [SerializeField] private float retrasoReaccionEnCadena = 0.15f;
 
     [Header("Valores de Daño")]
     [SerializeField] private int danoAlJugador = 1; 
@@ -23,17 +24,25 @@ public class MinaSubmarina : MonoBehaviour
     private Rigidbody2D rb;
     private Collider2D[] todosLosColliders;
     private bool yaSeActivo = false;
+    private bool detonacionInminente = false; 
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
-        
-        // Obtenemos todos los colliders que tenga la mina (el sólido y el trigger)
         todosLosColliders = GetComponents<Collider2D>();
     }
 
-    // Se activa cuando el "Trigger" de proximidad detecta al jugador o enemigo
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        MinaSubmarina otraMina = collision.gameObject.GetComponent<MinaSubmarina>();
+        if (otraMina != null)
+        {
+            ActivarMina();
+            otraMina.ActivarMina();
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (yaSeActivo) return;
@@ -43,16 +52,44 @@ public class MinaSubmarina : MonoBehaviour
 
         if (esJugador || esEnemigo)
         {
+            ActivarMina();
+        }
+    }
+
+    public void ActivarMina(bool porOndaExpansiva = false)
+    {
+        if (detonacionInminente) return;
+
+        if (porOndaExpansiva)
+        {
+            detonacionInminente = true;
+            yaSeActivo = true;
+            
+            StopAllCoroutines(); 
+            StartCoroutine(SecuenciaRetrasoCadena());
+            return;
+        }
+
+        if (!yaSeActivo)
+        {
+            yaSeActivo = true;
             StartCoroutine(SecuenciaActivacionMina());
         }
     }
 
+    private IEnumerator SecuenciaRetrasoCadena()
+    {
+        if (spriteRenderer != null) spriteRenderer.color = colorParpadeoAlerta;
+
+        yield return new WaitForSeconds(retrasoReaccionEnCadena);
+
+        StartCoroutine(SecuenciaExplosionVisual());
+    }
+
     private IEnumerator SecuenciaActivacionMina()
     {
-        yaSeActivo = true;
         float tiempoPasado = 0f;
 
-        // La mina parpadea MIENTRAS se mueve libremente por el escenario debido al empujón
         while (tiempoPasado < tiempoAntesDeExplotar)
         {
             float progreso = tiempoPasado / tiempoAntesDeExplotar;
@@ -74,22 +111,20 @@ public class MinaSubmarina : MonoBehaviour
 
     private IEnumerator SecuenciaExplosionVisual()
     {
-        // 1. Apagamos todos los colliders para que no choque con nada DURANTE la explosión
         foreach (var col in todosLosColliders)
         {
             if (col != null) col.enabled = false;
         }
 
-        // 2. Frenamos por completo el Rigidbody para que la explosión ocurra fija en ese punto final
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
-            rb.bodyType = RigidbodyType2D.Kinematic; // Evita que fuerzas externas la sigan moviendo
+            rb.bodyType = RigidbodyType2D.Kinematic; 
         }
 
-        // 3. Cambiamos el sprite y lo escalamos al radio de daño
         if (spriteExplosion != null && spriteRenderer != null)
         {
+            spriteRenderer.color = Color.white; 
             spriteRenderer.sprite = spriteExplosion;
 
             float tamanoSpriteOriginal = spriteRenderer.sprite.bounds.size.x;
@@ -97,23 +132,30 @@ public class MinaSubmarina : MonoBehaviour
             transform.localScale = new Vector3(escalaRequerida, escalaRequerida, 1f);
         }
 
-        // 4. Aplicamos el daño real en área
-        AplicarDanoExplosion();
+        AplicarDanoYBuscarMinas();
 
         yield return new WaitForSeconds(0.25f);
 
         Destroy(gameObject);
     }
 
-    private void AplicarDanoExplosion()
+    private void AplicarDanoYBuscarMinas()
     {
+        Debug.Log($"¡BOOM! {gameObject.name} detonó.");
+
         Collider2D[] objetosAlcanzados = Physics2D.OverlapCircleAll(transform.position, radioDeExplosion);
 
         foreach (Collider2D col in objetosAlcanzados)
         {
             if (col.gameObject == gameObject) continue;
 
-            // Daño al Jugador
+            MinaSubmarina minaVecina = col.GetComponent<MinaSubmarina>();
+            if (minaVecina != null)
+            {
+                minaVecina.ActivarMina(true);
+                continue;
+            }
+
             SaludTiburon vidaJugador = col.GetComponent<SaludTiburon>();
             if (vidaJugador != null)
             {
@@ -121,7 +163,6 @@ public class MinaSubmarina : MonoBehaviour
                 continue; 
             }
 
-            // Daño a los Enemigos
             VidaEnemigo vidaEnemigo = col.GetComponent<VidaEnemigo>();
             if (vidaEnemigo != null)
             {
