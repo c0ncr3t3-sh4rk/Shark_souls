@@ -1,0 +1,14 @@
+- [ ] parry
+- [ ] sangre al golpear y matar
+- [ ] salas
+- [ ] camara y bordes
+- [ ] enemigos
+- [ ] efectos
+- [ ] algun boss
+- [ ] superficie
+- [ ] mejoras
+- [ ] visuales de las mejoras
+- [ ] musica
+- [ ] efectos de sonido
+- [ ] generacion procedural
+- [ ] bosses
