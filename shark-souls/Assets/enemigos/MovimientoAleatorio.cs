@@ -60,20 +60,32 @@ public class MovimientoAleatorio : MonoBehaviour
 
     private void RotarSpriteHaciaMovimiento(Vector2 direccion)
     {
-        // 1. Calculamos el ángulo en grados hacia donde se está moviendo el pez
+        // 1. Calculamos el ángulo real en grados hacia donde se mueve el pez
         float anguloZ = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
 
-        // 2. Control anti-bocarriba: Si el pez se mueve hacia la izquierda (entre 90 y -90 grados)
-        // rotamos su eje X local para que el sprite simule un "espejo" sin voltearse de cabeza.
-        if (direccion.x < 0)
+        // 2. 🔥 EL TRUCO: Redondeamos el ángulo al múltiplo de 45 grados más cercano
+        // Esto divide los 360 grados del espacio en 8 porciones perfectas
+        anguloZ = Mathf.Round(anguloZ / 45f) * 45f;
+
+        // 3. Control anti-bocarriba mejorado para evitar temblores en vertical puro
+        if (Mathf.Abs(anguloZ) > 90f)
         {
-            // Giramos 180 grados en X para invertir el vientre/dorso del pez y compensar la dirección
+            // El ángulo corresponde a mirar hacia la izquierda (135, 180, -135 grados)
             transform.localRotation = Quaternion.Euler(180f, 0f, -anguloZ);
+        }
+        else if (Mathf.Abs(anguloZ) < 90f)
+        {
+            // El ángulo corresponde a mirar hacia la derecha (-45, 0, 45 grados)
+            transform.localRotation = Quaternion.Euler(0f, 0f, anguloZ);
         }
         else
         {
-            // Si va a la derecha, la rotación matemática estándar en Z es perfecta
-            transform.localRotation = Quaternion.Euler(0f, 0f, anguloZ);
+            // Si el ángulo es exactamente 90 o -90 (Puro arriba o puro abajo), 
+            // usamos la 'x' real del movimiento para decidir si el sprite mira a un lado o al otro.
+            if (direccion.x < 0)
+                transform.localRotation = Quaternion.Euler(180f, 0f, -anguloZ);
+            else
+                transform.localRotation = Quaternion.Euler(0f, 0f, anguloZ);
         }
     }
 

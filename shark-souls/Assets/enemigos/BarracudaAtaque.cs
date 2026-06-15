@@ -192,29 +192,62 @@ public class BarracudaAtaque : MonoBehaviour
         StartCoroutine(RutinaPensamientoAtaque());
     }
 
+    // Al final de BarracudaAtaque.cs, reemplaza las antiguas funciones de rotación por estas:
+
     private void RotarHaciaDireccionSuave(Vector2 dir)
     {
         if (dir.magnitude < 0.1f) return;
-        float anguloZ = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        
-        Quaternion rotacionObjetivo;
-        if (dir.x < 0)
-            rotacionObjetivo = Quaternion.Euler(180f, 0f, -anguloZ);
-        else
-            rotacionObjetivo = Quaternion.Euler(0f, 0f, anguloZ);
 
+        // 1. Calculamos y redondeamos el ángulo a múltiplos de 45 grados
+        float anguloZ = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        anguloZ = Mathf.Round(anguloZ / 45f) * 45f;
+
+        Quaternion rotacionObjetivo;
+
+        // 2. Aplicamos tu lógica de la carpa para rellenar la rotación objetivo
+        if (Mathf.Abs(anguloZ) > 90f)
+        {
+            rotacionObjetivo = Quaternion.Euler(180f, 0f, -anguloZ);
+        }
+        else if (Mathf.Abs(anguloZ) < 90f)
+        {
+            rotacionObjetivo = Quaternion.Euler(0f, 0f, anguloZ);
+        }
+        else
+        {
+            if (dir.x < 0)
+                rotacionObjetivo = Quaternion.Euler(180f, 0f, -anguloZ);
+            else
+                rotacionObjetivo = Quaternion.Euler(0f, 0f, anguloZ);
+        }
+
+        // 3. Interpolamos suavemente hacia ese bloque de ángulo fijo
         transform.localRotation = Quaternion.Lerp(transform.localRotation, rotacionObjetivo, Time.fixedDeltaTime * velocidadGiroSuave);
     }
 
     private void RotarHaciaDireccionInstantanea(Vector2 dir)
     {
         if (dir.magnitude < 0.1f) return;
-        float anguloZ = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
-        if (dir.x < 0)
+        // Misma lógica pero aplicada en el acto (para la embestida recta)
+        float anguloZ = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+        anguloZ = Mathf.Round(anguloZ / 45f) * 45f;
+
+        if (Mathf.Abs(anguloZ) > 90f)
+        {
             transform.localRotation = Quaternion.Euler(180f, 0f, -anguloZ);
-        else
+        }
+        else if (Mathf.Abs(anguloZ) < 90f)
+        {
             transform.localRotation = Quaternion.Euler(0f, 0f, anguloZ);
+        }
+        else
+        {
+            if (dir.x < 0)
+                transform.localRotation = Quaternion.Euler(180f, 0f, -anguloZ);
+            else
+                transform.localRotation = Quaternion.Euler(0f, 0f, anguloZ);
+        }
     }
 
     private Vector2 EvaluarRutaYEsquivar(Vector2 dirBase)

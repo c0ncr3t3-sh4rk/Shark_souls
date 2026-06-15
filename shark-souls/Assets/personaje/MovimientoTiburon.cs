@@ -7,6 +7,7 @@ public class MovimientoTiburon : MonoBehaviour
 
     private Rigidbody2D rb;
     private Vector2 inputMovimiento;
+    private bool direccion = false; // false = Izquierda, true = Derecha
 
     private void Awake()
     {
@@ -26,33 +27,33 @@ public class MovimientoTiburon : MonoBehaviour
 
     private void GirarSprite()
     {
-        // Si pulsas la A (izquierda), rotamos el objeto 180 grados en el eje Y
+        // 1. MEMORIA HORIZONTAL: Solo actualiza si realmente estás pulsando izquierda o derecha
         if (inputMovimiento.x > 0f)
         {
-            transform.eulerAngles = new Vector3(0f, 180f, 0f);
+            direccion = true; // Derecha
         }
-        // Si pulsas la D (derecha), restauramos la rotación original (0 grados)
         else if (inputMovimiento.x < 0f)
         {
-            transform.eulerAngles = new Vector3(0f, 0f, 0f);
+            direccion = false; // Izquierda
         }
 
-        if (inputMovimiento.y > 0f && inputMovimiento.x < 0f)
+        // 2. GIRO (Eje Y): Aplicamos los 180º o 0º según la memoria de la dirección
+        float rotY = direccion ? 180f : 0f;
+
+        // 3. INCLINACIÓN (Eje Z): Calculamos si sube, baja o está en horizontal puro
+        float rotZ = 0f;
+
+        if (inputMovimiento.y > 0f)
         {
-            transform.eulerAngles = new Vector3(0f, 0f, -45f);
+            rotZ = -45f; // Diagonal hacia arriba (tanto si vas solo arriba como en diagonal)
         }
-        else if (inputMovimiento.y > 0f && inputMovimiento.x > 0f)
+        else if (inputMovimiento.y < 0f)
         {
-            transform.eulerAngles = new Vector3(0f, 180f, -45f);
+            rotZ = 45f;  // Diagonal hacia abajo (tanto si vas solo abajo como en diagonal)
         }
-        else if (inputMovimiento.y < 0f && inputMovimiento.x < 0f)
-        {
-            transform.eulerAngles = new Vector3(0f, 0f, 45f);
-        }
-        else if (inputMovimiento.y < 0f && inputMovimiento.x > 0f)
-        {
-            transform.eulerAngles = new Vector3(0f, 180f, 45f);
-        }
+
+        // 4. APLICACIÓN: Un único cambio de eulerAngles sin conflictos de ifs
+        transform.eulerAngles = new Vector3(0f, rotY, rotZ);
     }
 
     public Vector2 ObtenerDireccionInput()
