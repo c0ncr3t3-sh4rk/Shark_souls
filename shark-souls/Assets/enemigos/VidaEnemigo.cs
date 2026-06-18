@@ -5,6 +5,10 @@ public class VidaEnemigo : MonoBehaviour
     [SerializeField] private int vidaMaxima = 3;
     private int vidaActual;
 
+    [Header("Efectos Visuales")]
+    [SerializeField] private GameObject efectoSangrePrefab; // <-- Prefab para el daño
+    [SerializeField] private GameObject manchaSangrePrefab; // <-- Prefab para la muerte
+
     private void Awake()
     {
         vidaActual = vidaMaxima;
@@ -15,7 +19,14 @@ public class VidaEnemigo : MonoBehaviour
         vidaActual -= cantidad;
         Debug.Log(gameObject.name + " ha recibido daño. Vida restante: " + vidaActual);
 
-        //Sangre();
+        if (Combo.Instancia != null)
+        {
+            Combo.Instancia.Refrescar();
+        }
+        
+        // Disparamos la sangre
+        Sangre();
+
         // Efecto cutre de parpadeo rojo al recibir daño
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null) StartCoroutine(EfectoDano(sr));
@@ -26,14 +37,16 @@ public class VidaEnemigo : MonoBehaviour
         }
     }
 
-    /*private void Sangre()
+    private void Sangre()
     {
+        // Si hay un prefab asignado en el Inspector, lo crea
         if (efectoSangrePrefab != null)
         {
-            GameObject sangre = Instantiate(efectoSangrePrefab, transform.position, transform.rotation);
-            Destroy(sangre, 2f); 
+            GameObject sangre = Instantiate(efectoSangrePrefab, transform.position, Quaternion.identity);
+            // Destruye el objeto de sangre después de 1 segundo para no saturar el juego
+            Destroy(sangre, 1f); 
         }
-    }*/
+    }
 
     private System.Collections.IEnumerator EfectoDano(SpriteRenderer sr)
     {
@@ -42,20 +55,20 @@ public class VidaEnemigo : MonoBehaviour
         sr.color = Color.white;
     }
 
-    [Header("Efectos de Muerte")]
-    [SerializeField] private GameObject manchaSangrePrefab; // <--- Ponemos la casilla para la mancha fija
-
-private void MonaMuerte()
-{
-    // Si tenemos configurada la mancha fija de muerte...
-    if (manchaSangrePrefab != null)
+    private void MonaMuerte()
     {
-        // La instanciamos en el sitio exacto donde ha muerto el pez
-        // Usamos Quaternion.identity para que no herede rotaciones raras del pez y se quede recta
-        Instantiate(manchaSangrePrefab, transform.position, Quaternion.identity);
-    }
+        // Si tenemos configurada la mancha fija de muerte...
+        if (manchaSangrePrefab != null)
+        {
+            Instantiate(manchaSangrePrefab, transform.position, Quaternion.identity);
+        }
 
-    Debug.Log(gameObject.name + " HA MUERTO.");
-    Destroy(gameObject); // El pez desaparece, pero la mancha se queda flotando independiente
-}
+        if (Combo.Instancia != null)
+        {
+            Combo.Instancia.RegistrarBaja();
+        }
+        
+        Debug.Log(gameObject.name + " HA MUERTO.");
+        Destroy(gameObject); // El pez desaparece
+    }
 }
