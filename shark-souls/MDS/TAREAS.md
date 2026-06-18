@@ -1,6 +1,8 @@
 - [ ] parry
 - [ ] sangre al golpear y matar
 - [ ] salas
+- [ ] combo
+- [ ] contador
 - [ ] camara y bordes
 - [ ] enemigos
 - [ ] efectos

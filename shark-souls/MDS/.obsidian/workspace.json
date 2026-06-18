@@ -216,9 +216,23 @@
               "icon": "lucide-file",
               "title": "TAREAS"
             }
+          },
+          {
+            "id": "b92cb3839245a8fd",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ideas.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ideas"
+            }
           }
         ],
-        "currentTab": 14
+        "currentTab": 15
       }
     ],
     "direction": "vertical"
@@ -380,10 +394,11 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "2a056e958a1225af",
+  "active": "b92cb3839245a8fd",
   "lastOpenFiles": [
-    "Sin título.md",
     "TAREAS.md",
+    "ideas.md",
+    "COMBO",
     "MEJORAS/REFLEJOS DE PEZ GATO.md",
     "MEJORAS/BOOST DE MOVIMIENTO.md",
     "MEJORAS/COLA ACOLCHADA.md",
