@@ -11,6 +11,7 @@ Builds/
 Logs/
 UserSettings/
 .vscode/
+Assets/_Recovery/
 
 # Memory dumps
 *.log

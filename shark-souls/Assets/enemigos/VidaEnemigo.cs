@@ -21,7 +21,7 @@ public class VidaEnemigo : MonoBehaviour
 
         if (Combo.Instancia != null)
         {
-            Combo.Instancia.Refrescar();
+            Combo.Instancia.RegistrarBaja();
         }
         
         // Disparamos la sangre
