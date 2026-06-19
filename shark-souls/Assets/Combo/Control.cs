@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class Combo : MonoBehaviour
 {
     public static Combo Instancia;
+    private bool esMulticolor = false;
 
     [Header("Referencias")]
     private TextMeshProUGUI texto;
@@ -55,10 +56,38 @@ public class Combo : MonoBehaviour
             texto.text = "";
         }
 
-        // 3. Efecto temblor si es mayor a 50
-        if (comboActual >= 50)
+        // 3. Efecto temblor
+        if (comboActual >= 100)
+        {
+            transform.localPosition = posOriginal + (Vector3)Random.insideUnitCircle * 10f;
+        }
+        else if (comboActual >= 50)
         {
             transform.localPosition = posOriginal + (Vector3)Random.insideUnitCircle * 5f;
+        }
+        else if (comboActual >= 25)
+        {
+            transform.localPosition = posOriginal + (Vector3)Random.insideUnitCircle * 2f;
+        }
+        else if (comboActual >= 10)
+        {
+            transform.localPosition = posOriginal + (Vector3)Random.insideUnitCircle * 1f;
+        }
+
+        // disco a partir de 100
+        if (comboActual >= 100)
+        {
+            // Efecto arcoíris: recorre el espectro de color según el tiempo
+            float hue = Mathf.PingPong(Time.time * 2f, 1f); 
+            texto.color = Color.HSVToRGB(hue, 1f, 1f);
+            
+            // Opcional: Aumentar el tamaño un poco para que sea "tochisimo"
+            texto.fontSize = 170 + Mathf.Sin(Time.time * 10f) * 10f; 
+        }
+        else
+        {
+            // Si no es multicolor, mantenemos el tamaño normal
+            texto.fontSize = 170; 
         }
     }
 
@@ -70,9 +99,11 @@ public class Combo : MonoBehaviour
         texto.text = "X " + comboActual;
         
         // Cambio de colores según hitos
-        if (comboActual >= 50) texto.color = Color.red;
+        if (comboActual >= 100) texto.color = Color.magenta;
+        else if (comboActual >= 50) texto.color = Color.red;
         else if (comboActual >= 25) texto.color = Color.magenta;
-        else if (comboActual >= 10) texto.color = Color.yellow;
+        else if (comboActual >= 10) texto.color = Color.green;
+        else if (comboActual >= 5) texto.color = Color.yellow;
         else texto.color = Color.white;
 
         StopAllCoroutines();
