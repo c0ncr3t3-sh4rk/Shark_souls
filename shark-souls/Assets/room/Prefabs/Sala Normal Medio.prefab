@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5340261436580019135}
   - component: {fileID: 8030178420429840820}
   - component: {fileID: 7049431301779759021}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -147,7 +147,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4029819667622566866}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_Izquierda
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -180,7 +180,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2626210231835587482}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_Derecha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -215,7 +215,7 @@ GameObject:
   - component: {fileID: 6177158544646551194}
   - component: {fileID: 6082926537902988140}
   - component: {fileID: 488590390208855547}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_Derecha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -353,7 +353,7 @@ GameObject:
   - component: {fileID: 5347156145692630915}
   - component: {fileID: 2121848622878337885}
   - component: {fileID: 8419567303653745797}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -491,7 +491,7 @@ GameObject:
   - component: {fileID: 4444371902041177550}
   - component: {fileID: 6500946982247820845}
   - component: {fileID: 7916876296546889523}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_Abajo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -629,7 +629,7 @@ GameObject:
   - component: {fileID: 723119386648402904}
   - component: {fileID: 3151728632947725900}
   - component: {fileID: 8739124495475847430}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -767,7 +767,7 @@ GameObject:
   - component: {fileID: 2437881091461301861}
   - component: {fileID: 8288376090627093282}
   - component: {fileID: 1101189996446829461}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -905,7 +905,7 @@ GameObject:
   - component: {fileID: 4403121027171075810}
   - component: {fileID: 1595939109969538941}
   - component: {fileID: 5883104262661046824}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1043,7 +1043,7 @@ GameObject:
   - component: {fileID: 7210986102794333212}
   - component: {fileID: 6678262855760456258}
   - component: {fileID: 4766666605609351953}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1179,7 +1179,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6475756227531319109}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_Abajo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1212,7 +1212,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 387003117074799181}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_Arriba
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1374,7 +1374,7 @@ GameObject:
   - component: {fileID: 4558763049638289269}
   - component: {fileID: 1527453793898579740}
   - component: {fileID: 6633818802557834637}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1512,7 +1512,7 @@ GameObject:
   - component: {fileID: 8872369112619364769}
   - component: {fileID: 1700232683481450314}
   - component: {fileID: 8237760263096114818}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_Izquierda
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1650,7 +1650,7 @@ GameObject:
   - component: {fileID: 7228433879485785784}
   - component: {fileID: 827484838771221857}
   - component: {fileID: 9167317562027876473}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1788,7 +1788,7 @@ GameObject:
   - component: {fileID: 1648988024296953004}
   - component: {fileID: 7236734587537597787}
   - component: {fileID: 8259406982235047592}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_Arriba
   m_TagString: Untagged
   m_Icon: {fileID: 0}

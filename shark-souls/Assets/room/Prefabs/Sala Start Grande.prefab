@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7349209452659173948}
   - component: {fileID: 6239851654503069754}
   - component: {fileID: 947099901630262597}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -149,7 +149,7 @@ GameObject:
   - component: {fileID: 6600575902229392421}
   - component: {fileID: 6333614702966748005}
   - component: {fileID: 7398743993497175362}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -474,7 +474,7 @@ GameObject:
   - component: {fileID: 1097300105447086413}
   - component: {fileID: 6909213658781542756}
   - component: {fileID: 914249105639966237}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -612,7 +612,7 @@ GameObject:
   - component: {fileID: 3683221720762362920}
   - component: {fileID: 6596303185947003146}
   - component: {fileID: 6707556921820453533}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -750,7 +750,7 @@ GameObject:
   - component: {fileID: 8998151443235679958}
   - component: {fileID: 6105523061256192119}
   - component: {fileID: 3469137825411698484}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_0_1_Izquierda
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -888,7 +888,7 @@ GameObject:
   - component: {fileID: 8799856621853447760}
   - component: {fileID: 2860286567975598485}
   - component: {fileID: 2948119404278551201}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1026,7 +1026,7 @@ GameObject:
   - component: {fileID: 3554561804990754210}
   - component: {fileID: 3270291868157376777}
   - component: {fileID: 729812206701978766}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1164,7 +1164,7 @@ GameObject:
   - component: {fileID: 8566166074108412573}
   - component: {fileID: 7902519960566626391}
   - component: {fileID: 1660266532286804747}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1300,7 +1300,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6152267923870665786}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_1_1_Abajo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1333,7 +1333,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8277613692828951227}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_1_1_Derecha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1368,7 +1368,7 @@ GameObject:
   - component: {fileID: 8938068034986379326}
   - component: {fileID: 7726949680148713337}
   - component: {fileID: 3286630347168381846}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1504,7 +1504,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4939234252614891563}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_0_0_Abajo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1539,7 +1539,7 @@ GameObject:
   - component: {fileID: 5136463247972433717}
   - component: {fileID: 4507412898951269523}
   - component: {fileID: 9105672949172291300}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1675,7 +1675,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4268424855713759354}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_1_1_Arriba
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1710,7 +1710,7 @@ GameObject:
   - component: {fileID: 3621658351851997719}
   - component: {fileID: 8918244550728789444}
   - component: {fileID: 2674373495066282368}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1848,7 +1848,7 @@ GameObject:
   - component: {fileID: 3586451961059316069}
   - component: {fileID: 2378140119865481552}
   - component: {fileID: 5939911839526557641}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_0_0_Derecha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1984,7 +1984,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2021322505089603191}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_-1_-1_Derecha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2017,7 +2017,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5381138406685618675}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_-1_-1_Izquierda
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2050,7 +2050,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8059202824402190086}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_0_1_Arriba
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2085,7 +2085,7 @@ GameObject:
   - component: {fileID: 3174316189938624574}
   - component: {fileID: 9147131079517634188}
   - component: {fileID: 1378506897473927994}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2223,7 +2223,7 @@ GameObject:
   - component: {fileID: 1065237718155949761}
   - component: {fileID: 5120511483923523737}
   - component: {fileID: 7995244900014165377}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2361,7 +2361,7 @@ GameObject:
   - component: {fileID: 2946849678131522598}
   - component: {fileID: 4148840142358014248}
   - component: {fileID: 4739789495567526061}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_-1_-1_Derecha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2499,7 +2499,7 @@ GameObject:
   - component: {fileID: 3023309624412817186}
   - component: {fileID: 7668341337633316577}
   - component: {fileID: 7514777604523465750}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2637,7 +2637,7 @@ GameObject:
   - component: {fileID: 7370582078467912997}
   - component: {fileID: 8094356613152593809}
   - component: {fileID: 2207550075416087668}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_0_0_Abajo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2773,7 +2773,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4125668774973965249}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_-1_0_Arriba
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2806,7 +2806,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1942246478107847506}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_-1_0_Izquierda
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2841,7 +2841,7 @@ GameObject:
   - component: {fileID: 3442131238323840063}
   - component: {fileID: 8680810089462462285}
   - component: {fileID: 1803112634694557408}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2979,7 +2979,7 @@ GameObject:
   - component: {fileID: 7175703493183573658}
   - component: {fileID: 220604296036152943}
   - component: {fileID: 8590034426097137390}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3115,7 +3115,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8477204995245954088}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_0_1_Izquierda
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3150,7 +3150,7 @@ GameObject:
   - component: {fileID: 2136595129700310140}
   - component: {fileID: 2930887455088063555}
   - component: {fileID: 976441335548168137}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3288,7 +3288,7 @@ GameObject:
   - component: {fileID: 1656319836055493643}
   - component: {fileID: 5180679990691404166}
   - component: {fileID: 4169078270149721261}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3426,7 +3426,7 @@ GameObject:
   - component: {fileID: 3585228029640821895}
   - component: {fileID: 515035938176834214}
   - component: {fileID: 5089888435520598327}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3564,7 +3564,7 @@ GameObject:
   - component: {fileID: 4171997177533338571}
   - component: {fileID: 8050032331447660748}
   - component: {fileID: 4386809065841331974}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_0_1_Arriba
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3700,7 +3700,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4285784443450046329}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_-1_-1_Abajo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3735,7 +3735,7 @@ GameObject:
   - component: {fileID: 5254719580801523781}
   - component: {fileID: 2631918913400073670}
   - component: {fileID: 723807340804921149}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_1_1_Abajo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3873,7 +3873,7 @@ GameObject:
   - component: {fileID: 547227541411590465}
   - component: {fileID: 1542538123476626586}
   - component: {fileID: 6928947011334560293}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_1_1_Arriba
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4011,7 +4011,7 @@ GameObject:
   - component: {fileID: 1004316097363528271}
   - component: {fileID: 1852795204112622030}
   - component: {fileID: 7184078565522283119}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_-1_0_Arriba
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4149,7 +4149,7 @@ GameObject:
   - component: {fileID: 7617325532327484352}
   - component: {fileID: 6375782735504897650}
   - component: {fileID: 4814690514468310658}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4287,7 +4287,7 @@ GameObject:
   - component: {fileID: 5523530800142717835}
   - component: {fileID: 1720713482615077617}
   - component: {fileID: 4866096640160233772}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4425,7 +4425,7 @@ GameObject:
   - component: {fileID: 5259285321656443132}
   - component: {fileID: 3305405005239745510}
   - component: {fileID: 5020483805138475746}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4563,7 +4563,7 @@ GameObject:
   - component: {fileID: 3615935883176888753}
   - component: {fileID: 4816422016720813046}
   - component: {fileID: 214153302772586468}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4701,7 +4701,7 @@ GameObject:
   - component: {fileID: 7984974405589214732}
   - component: {fileID: 1906921248423408974}
   - component: {fileID: 5064487974854683001}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4839,7 +4839,7 @@ GameObject:
   - component: {fileID: 5781196656885828923}
   - component: {fileID: 8146114449587921759}
   - component: {fileID: 1449325315095657692}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: TrozoMuro_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4977,7 +4977,7 @@ GameObject:
   - component: {fileID: 1901696565960344739}
   - component: {fileID: 8355224798443374952}
   - component: {fileID: 749913201347929959}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_-1_-1_Izquierda
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5115,7 +5115,7 @@ GameObject:
   - component: {fileID: 4940232755561250860}
   - component: {fileID: 2458493290197437141}
   - component: {fileID: 1227239514253545211}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_-1_0_Izquierda
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5253,7 +5253,7 @@ GameObject:
   - component: {fileID: 1757207384315647040}
   - component: {fileID: 4057757380207418095}
   - component: {fileID: 1279470297337835736}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_-1_-1_Abajo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5391,7 +5391,7 @@ GameObject:
   - component: {fileID: 2772209394960379233}
   - component: {fileID: 2588659637765996144}
   - component: {fileID: 5267144797403116078}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Pared_1_1_Derecha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5527,7 +5527,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7717642746954146245}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Puerta_0_0_Derecha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
