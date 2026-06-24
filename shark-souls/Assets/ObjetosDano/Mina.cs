@@ -1,7 +1,8 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.InputSystem;
 
-public class MinaSubmarina : MonoBehaviour
+public class MinaSubmarina : Proyectil
 {
     [Header("Configuración de la Mina")]
     [SerializeField] private float tiempoAntesDeExplotar = 2f; 
@@ -21,20 +22,37 @@ public class MinaSubmarina : MonoBehaviour
     [SerializeField] private Color colorParpadeoAlerta = Color.red;
 
     private SpriteRenderer spriteRenderer;
-    private Rigidbody2D rb;
     private Collider2D[] todosLosColliders;
     private bool yaSeActivo = false;
     private bool detonacionInminente = false; 
 
-    private void Awake()
+    public bool estaPorExplotar => yaSeActivo && !haExplotado;
+    private bool haExplotado = false;
+
+    protected override void Awake()
     {
+        base.Awake();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        rb = GetComponent<Rigidbody2D>();
         todosLosColliders = GetComponents<Collider2D>();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (fueParreado)
+        {
+            if (collision.gameObject.GetComponent<SaludTiburon>() != null) return;
+
+            bool esEnemigo = collision.gameObject.GetComponent<VidaEnemigo>() != null;
+            bool esPared = collision.gameObject.layer == LayerMask.NameToLayer("Paredes");
+            bool esOtraMina = collision.gameObject.GetComponent<MinaSubmarina>() != null;
+
+            if (esEnemigo || esPared || esOtraMina)
+            {
+                Detonar();
+                return;
+            }
+        }
+
         MinaSubmarina otraMina = collision.gameObject.GetComponent<MinaSubmarina>();
         if (otraMina != null)
         {
@@ -45,6 +63,20 @@ public class MinaSubmarina : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (fueParreado)
+        {
+            if (collision.GetComponent<SaludTiburon>() != null) return;
+
+            bool esEnemigoParreado = collision.GetComponent<VidaEnemigo>() != null;
+            bool esPared = collision.gameObject.layer == LayerMask.NameToLayer("Paredes");
+
+            if (esEnemigoParreado || esPared)
+            {
+                Detonar();
+                return;
+            }
+        }
+
         if (yaSeActivo) return;
 
         bool esJugador = collision.GetComponent<SaludTiburon>() != null;
@@ -111,6 +143,8 @@ public class MinaSubmarina : MonoBehaviour
 
     private IEnumerator SecuenciaExplosionVisual()
     {
+        haExplotado = true;
+
         foreach (var col in todosLosColliders)
         {
             if (col != null) col.enabled = false;
@@ -159,7 +193,10 @@ public class MinaSubmarina : MonoBehaviour
             SaludTiburon vidaJugador = col.GetComponent<SaludTiburon>();
             if (vidaJugador != null)
             {
-                vidaJugador.RecibirDano(danoAlJugador);
+                if (!fueParreado)
+                {
+                    vidaJugador.RecibirDano(danoAlJugador);
+                }
                 continue; 
             }
 
@@ -169,6 +206,21 @@ public class MinaSubmarina : MonoBehaviour
                 vidaEnemigo.RecibirDanoEnemigo(danoAlEnemigo);
             }
         }
+    }
+
+    public override void OnParry(GameObject parriedBy, int damage)
+    {
+        if (estaPorExplotar)
+        {
+            base.OnParry(parriedBy, damage);
+        }
+    }
+
+    public void Detonar()
+    {
+        if (haExplotado) return;
+        StopAllCoroutines();
+        StartCoroutine(SecuenciaExplosionVisual());
     }
 
     private void OnDrawGizmosSelected()

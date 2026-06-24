@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class BarracudaAtaque : MonoBehaviour
+public class BarracudaAtaque : MonoBehaviour, IParryable
 {
     private enum EstadoEnemigo { Cazando, Cargando, Embestiendo, Aturdido, Cooldown }
     private EstadoEnemigo estadoActual = EstadoEnemigo.Cazando;
@@ -158,10 +158,23 @@ public class BarracudaAtaque : MonoBehaviour
             SaludTiburon vidaTiburon = col.GetComponent<SaludTiburon>();
             if (vidaTiburon != null)
             {
-                vidaTiburon.RecibirDano(danoAlJugador);
-                StopAllCoroutines();
-                StartCoroutine(EntrarEnStun(false, true)); 
-                return;
+                // Comprobamos si el jugador está haciendo parry
+                Parry parry = col.GetComponent<Parry>();
+                if (parry == null) parry = col.GetComponentInParent<Parry>();
+                if (parry == null) parry = col.GetComponentInChildren<Parry>();
+
+                if (parry != null && parry.IntentarParry(gameObject, danoAlJugador))
+                {
+                    // El daño, stun y efectos de pantalla/sonido se manejan dentro de IntentarParry
+                    return;
+                }
+                else
+                {
+                    vidaTiburon.RecibirDano(danoAlJugador);
+                    StopAllCoroutines();
+                    StartCoroutine(EntrarEnStun(false, true)); 
+                    return;
+                }
             }
 
             if (col.gameObject.layer == LayerMask.NameToLayer("Paredes"))
@@ -171,6 +184,20 @@ public class BarracudaAtaque : MonoBehaviour
                 return;
             }
         }
+    }
+
+    public void OnParry(GameObject parriedBy, int damage)
+    {
+        // Devolvemos el daño a la barracuda
+        VidaEnemigo vidaBarracuda = GetComponent<VidaEnemigo>();
+        if (vidaBarracuda != null)
+        {
+            vidaBarracuda.RecibirDanoEnemigo(damage);
+        }
+
+        // Detenemos la embestida y la aturdimos
+        StopAllCoroutines();
+        StartCoroutine(EntrarEnStun(false, false));
     }
 
     private IEnumerator EntrarEnStun(bool porPared, bool golpeoAlJugador)

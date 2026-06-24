@@ -14,7 +14,7 @@ public class AtaqueTiburon : MonoBehaviour
     [SerializeField] private Collider2D colisionadorBoca; // 👈 Arrastraremos un colisionador aquí
 
     private SpriteRenderer spriteRenderer; 
-    private bool estaMordiendo = false; 
+    public static bool estaOcupado = false;
 
     private void Awake()
     {
@@ -27,7 +27,7 @@ public class AtaqueTiburon : MonoBehaviour
 
     public void OnAttack(InputValue value)
     {
-        if (value.isPressed && !estaMordiendo)
+        if (value.isPressed && !estaOcupado)
         {
             StartCoroutine(RutinaMordisco());
         }
@@ -35,7 +35,7 @@ public class AtaqueTiburon : MonoBehaviour
 
     private IEnumerator RutinaMordisco()
     {
-        estaMordiendo = true;
+        estaOcupado = true;
         
         if (spriteMordisco != null) spriteRenderer.sprite = spriteMordisco;
 
@@ -49,14 +49,14 @@ public class AtaqueTiburon : MonoBehaviour
 
         if (spriteNormal != null) spriteRenderer.sprite = spriteNormal;
 
-        estaMordiendo = false;
+        estaOcupado = false;
     }
 
     // Este método mágico de Unity se activa si la boca toca a un enemigo mientras está activa
 private void OnTriggerEnter2D(Collider2D collision)
     {
         // 1. FILTRO DE BOTÓN: Si no estás apretando el clic de morder, salimos
-        if (!estaMordiendo) return;
+        if (!estaOcupado) return;
 
         // 2. FILTRO DE MORDISCO: Comprobamos si el objeto que ha provocado la colisión
         // tiene el mismo nombre que nuestro objeto de la boca.
