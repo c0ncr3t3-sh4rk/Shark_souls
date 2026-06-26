@@ -73,11 +73,4 @@ public class MovimientoAleatorio : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(0.5f, 2f));
         }
     }
-
-    private void OnDrawGizmos()
-    {
-        // Dibujamos una línea en el editor para ver hacia dónde quiere ir el pez
-        Gizmos.color = Color.green;
-        Gizmos.DrawRay(transform.position, direccion * distanciaDeteccion);
-    }
 }

@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic; // 👈 OBLIGATORIO: Para usar listas de corazones
+using System.Collections.Generic;
 
 public class SaludTiburon : MonoBehaviour
 {
