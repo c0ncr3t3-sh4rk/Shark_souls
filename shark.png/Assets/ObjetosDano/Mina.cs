@@ -203,7 +203,7 @@ public class MinaSubmarina : Proyectil
             VidaEnemigo vidaEnemigo = col.GetComponent<VidaEnemigo>();
             if (vidaEnemigo != null)
             {
-                vidaEnemigo.RecibirDanoEnemigo(danoAlEnemigo);
+                vidaEnemigo.RecibirDano(danoAlEnemigo);
             }
         }
     }

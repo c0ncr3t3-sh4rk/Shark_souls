@@ -3,24 +3,18 @@ using System.Collections;
 
 public class AsfixiaTiburon : MonoBehaviour
 {
-    [Header("Configuración de Asfixia")]
+    [Header("Configuración")]
     [SerializeField] private float tiempoLimiteQuieto = 4f;
-    [SerializeField] private float tiempoEntreGolpesConsecutivos = 1.5f;
     [SerializeField] private int danoPorAsfixia = 1; 
 
-    [Header("Efecto Visual de Alerta")]
+    [Header("Visual")]
     [SerializeField] private Color colorAsfixia = new Color(0.2f, 0.5f, 1f, 1f); 
-    [SerializeField] private float velocidadParpadeoAlerta = 0.15f;
-    [SerializeField] private float velocidadParpadeoCritico = 0.06f;
+    [SerializeField] private float velocidadParpadeo = 0.15f;
 
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private SaludTiburon saludTiburon;
-
-    private float cronometroQuieto = 0f;
-    private bool estaParpadeando = false;
-    private bool yaRecibioPrimerGolpe = false;
-    private Coroutine corrutinaVisual;
+    private Coroutine procesoAsfixia;
 
     private void Awake()
     {
@@ -31,77 +25,41 @@ public class AsfixiaTiburon : MonoBehaviour
 
     private void Update()
     {
-        if (rb == null || saludTiburon == null) return;
+        bool estaQuieto = rb.linearVelocity.sqrMagnitude < 0.005f;
 
-        if (Mathf.Abs(rb.linearVelocity.x) < 0.05f && Mathf.Abs(rb.linearVelocity.y) < 0.05f)
+        if (estaQuieto && procesoAsfixia == null)
         {
-            cronometroQuieto += Time.deltaTime;
-
-            float limiteActual = yaRecibioPrimerGolpe ? tiempoEntreGolpesConsecutivos : tiempoLimiteQuieto;
-
-            if (cronometroQuieto >= (limiteActual * 0.5f) && !estaParpadeando)
-            {
-                estaParpadeando = true;
-                corrutinaVisual = StartCoroutine(EfectoVisualAsfixia());
-            }
-
-            if (cronometroQuieto >= limiteActual)
-            {
-                saludTiburon.RecibirDano(danoPorAsfixia);
-                Debug.Log("¡El tiburón sufre por falta de movimiento!");
-                
-                yaRecibioPrimerGolpe = true; 
-                
-                cronometroQuieto = 0f; 
-
-                ActualizarFrecuenciaVisual();
-            }
+            procesoAsfixia = StartCoroutine(Asfixia());
         }
-        else
+        else if (!estaQuieto && procesoAsfixia != null)
         {
-            cronometroQuieto = 0f;
-            yaRecibioPrimerGolpe = false; 
-            
-            if (estaParpadeando)
-            {
-                DetenerEfectoVisual();
-            }
+            StopCoroutine(procesoAsfixia);
+            procesoAsfixia = null;
+            spriteRenderer.color = Color.white;
         }
     }
 
-    private IEnumerator EfectoVisualAsfixia()
+    private IEnumerator Asfixia()
     {
-        while (estaParpadeando)
+        float espera = tiempoLimiteQuieto;
+
+        while (true)
         {
-            if (spriteRenderer != null)
+            yield return new WaitForSeconds(espera * 0.5f);
+
+            float tiempoParpadeando = 0f;
+            float ritmo = (espera == tiempoLimiteQuieto) ? velocidadParpadeo : (velocidadParpadeo / 2f);
+
+            while (tiempoParpadeando < (espera * 0.5f))
             {
                 spriteRenderer.color = (spriteRenderer.color == Color.white) ? colorAsfixia : Color.white;
+                yield return new WaitForSeconds(ritmo);
+                tiempoParpadeando += ritmo;
             }
 
-            float ritmoActual = yaRecibioPrimerGolpe ? velocidadParpadeoCritico : velocidadParpadeoAlerta;
-            yield return new WaitForSeconds(ritmoActual);
-        }
-    }
-
-    private void ActualizarFrecuenciaVisual()
-    {
-        if (corrutinaVisual != null) StopCoroutine(corrutinaVisual);
-        if (estaParpadeando)
-        {
-            corrutinaVisual = StartCoroutine(EfectoVisualAsfixia());
-        }
-    }
-
-    private void DetenerEfectoVisual()
-    {
-        estaParpadeando = false;
-        if (corrutinaVisual != null)
-        {
-            StopCoroutine(corrutinaVisual);
-        }
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = Color.white; 
+            saludTiburon.RecibirDano(danoPorAsfixia);
+            
+            espera = tiempoLimiteQuieto / 4f;
         }
     }
 }

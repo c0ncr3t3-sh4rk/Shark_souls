@@ -29,7 +29,7 @@ public class AnimacionMeneitoPng : MonoBehaviour
         if (movTiburon == null || rb == null) return;
 
         // 1. Leemos el input actual de tu script de movimiento
-        Vector2 input = movTiburon.ObtenerDireccionInput();
+        Vector2 input = movTiburon.getImput();
 
         // 2. Sincronizamos la base con la NUEVA lógica del tiburón
         // Guardamos la memoria del lado al que mira

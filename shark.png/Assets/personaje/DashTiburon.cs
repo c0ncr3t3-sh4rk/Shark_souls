@@ -4,12 +4,12 @@ using UnityEngine.InputSystem;
 
 public class DashTiburon : MonoBehaviour
 {
-    [Header("Configuración del Dash")]
+    [Header("Configuración")]
     [SerializeField] private float fuerzaDash = 20f;
     [SerializeField] private float duracionDash = 0.2f;
     [SerializeField] private float tiempoEsperaDash = 1f;
 
-    [Header("Efecto Imágenes Residuales")]
+    [Header("Imágenes Residuales")]
     [SerializeField] private Color colorFantasma = new Color(0f, 0.7f, 1f, 0.6f); 
     [SerializeField] private float tiempoVidaFantasma = 0.4f;
     [SerializeField] private float tiempoEntreFantasmas = 0.04f;
@@ -29,7 +29,6 @@ public class DashTiburon : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         scriptMovimiento = GetComponent<MovimientoTiburon>();
         
-        // 🛡️ Buscamos el componente de salud en el tiburón
         scriptSalud = GetComponent<SaludTiburon>(); 
     }
 
@@ -37,11 +36,11 @@ public class DashTiburon : MonoBehaviour
     {
         if (value.isPressed && puedeHacerDash && !estaHaciendoDash)
         {
-            Vector2 direccionInput = scriptMovimiento.ObtenerDireccionInput();
+            Vector2 direccion = scriptMovimiento.getImput();
 
-            if (direccionInput.magnitude > 0.01f)
+            if (direccion.magnitude > 0.01f)
             {
-                StartCoroutine(EjecutarDash(direccionInput.normalized));
+                StartCoroutine(EjecutarDash(direccion.normalized));
             }
         }
     }
@@ -51,37 +50,33 @@ public class DashTiburon : MonoBehaviour
         puedeHacerDash = false;
         estaHaciendoDash = true;
 
-        // 🛡️ ACTIVAR INVENCIBILIDAD AL EMPEZAR EL DASH
-        if (scriptSalud != null) scriptSalud.SetInvencible(true);
+        scriptSalud.SetInvencible(true);
 
-        if (scriptMovimiento != null) scriptMovimiento.enabled = false;
+        scriptMovimiento.enabled = false;
 
         rb.linearVelocity = direccion * fuerzaDash;
-        Coroutine rutinaFantasmas = StartCoroutine(RutinaImagenesResiduales());
+        Coroutine rutinaFantasmas = StartCoroutine(ImagenesResiduales());
 
         yield return new WaitForSeconds(duracionDash);
-
         rb.linearVelocity = Vector2.zero;
-        if (scriptMovimiento != null) scriptMovimiento.enabled = true;
+        scriptMovimiento.enabled = true;
         StopCoroutine(rutinaFantasmas);
 
-        // 🛡️ DESACTIVAR INVENCIBILIDAD EN CUANTO EL DASH TERMINA
-        if (scriptSalud != null) scriptSalud.SetInvencible(false);
-
-        estaHaciendoDash = false; // El dash terminó, ya no está haciendo dash
+        scriptSalud.SetInvencible(false);
+        estaHaciendoDash = false;
 
         yield return new WaitForSeconds(tiempoEsperaDash);
         puedeHacerDash = true;
     }
 
-    private IEnumerator RutinaImagenesResiduales()
+    private IEnumerator ImagenesResiduales()
     {
         while (true)
         {
             GameObject fantasma = new GameObject("EcoDash_Clon");
             EcoDash componenteEco = fantasma.AddComponent<EcoDash>();
 
-            componenteEco.Inicializar(
+            componenteEco.Ecos(
                 spriteRenderer.sprite,
                 transform.position,
                 transform.rotation,

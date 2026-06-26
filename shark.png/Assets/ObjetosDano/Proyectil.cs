@@ -66,7 +66,7 @@ public class Proyectil : MonoBehaviour, IParryable
             VidaEnemigo enemigo = collision.GetComponent<VidaEnemigo>();
             if (enemigo != null)
             {
-                enemigo.RecibirDanoEnemigo(danoBase);
+                enemigo.RecibirDano(danoBase);
                 Destroy(gameObject);
                 return;
             }

@@ -6,8 +6,7 @@ public class EcoDash : MonoBehaviour
     private Color colorActual;
     private float velocidadDesvanecer;
 
-    // 🛠️ Ahora le pedimos también el 'sortingOrderOriginal' al crearlo
-    public void Inicializar(Sprite spriteOriginal, Vector3 posicion, Quaternion rotacion, Vector3 escala, Color colorInicial, float tiempoVida, int sortingOrderOriginal)
+    public void Ecos(Sprite spriteOriginal, Vector3 posicion, Quaternion rotacion, Vector3 escala, Color colorInicial, float tiempoVida, int sortingOrderOriginal)
     {
         sr = gameObject.AddComponent<SpriteRenderer>();
         
@@ -16,7 +15,6 @@ public class EcoDash : MonoBehaviour
         transform.rotation = rotacion;
         transform.localScale = escala;
         
-        // 🎯 Aquí está el truco: se coloca exactamente una capa por debajo del tiburón
         sr.sortingOrder = sortingOrderOriginal - 1; 
 
         colorActual = colorInicial;

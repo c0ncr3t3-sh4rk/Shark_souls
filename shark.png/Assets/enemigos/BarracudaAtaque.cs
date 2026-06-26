@@ -192,7 +192,7 @@ public class BarracudaAtaque : MonoBehaviour, IParryable
         VidaEnemigo vidaBarracuda = GetComponent<VidaEnemigo>();
         if (vidaBarracuda != null)
         {
-            vidaBarracuda.RecibirDanoEnemigo(damage);
+            vidaBarracuda.RecibirDano(damage + 3);
         }
 
         // Detenemos la embestida y la aturdimos
