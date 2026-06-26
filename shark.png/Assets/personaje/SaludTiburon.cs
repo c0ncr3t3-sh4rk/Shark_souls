@@ -4,36 +4,23 @@ using System.Collections.Generic; // 👈 OBLIGATORIO: Para usar listas de coraz
 
 public class SaludTiburon : MonoBehaviour
 {
-    [Header("Configuración de Vida")]
     [SerializeField] private int vidasMaximas = 3; 
-    private int vidasActuales;
-
-    [Header("Conexión con la GUI (Corazones)")]
-    // Arrastra aquí el objeto 'ContenedorCorazones'
     [SerializeField] private Transform contenedorCorazones; 
-    // Arrastra aquí el archivo azul 'Corazon_Prefab' desde tus carpetas
     [SerializeField] private GameObject corazonPrefab; 
-
-    // Lista interna para guardar los corazones que se vayan creando
-    private List<GameObject> listaCorazones = new List<GameObject>();
-
-    [Header("Frames de Invencibilidad (I-Frames)")]
-    [SerializeField] private float duracionInvencibilidadHit = 1.5f; 
-    private bool esInvencible = false;
-
-    [Header("Efectos Visuales (UI y Sprite)")]
+    [SerializeField] private float duracionInvencibilidad = 1.5f; 
     [SerializeField] private GameObject pantallaRoja; 
-    [SerializeField] private float duracionFlash = 0.2f;
     private SpriteRenderer spriteRenderer;
+    private int vidasActuales;
+    private List<GameObject> listaCorazones = new List<GameObject>();
+    private bool esInvencible = false;
 
     private void Awake()
     {
         vidasActuales = vidasMaximas;
         spriteRenderer = GetComponent<SpriteRenderer>();
-        if (pantallaRoja != null) pantallaRoja.SetActive(false);
+        pantallaRoja.SetActive(false);
 
-        // Generamos los corazones visuales al iniciar
-        CrearCorazonesUI();
+        CrearCorazones();
     }
 
     public void SetInvencible(bool estado)
@@ -51,8 +38,7 @@ public class SaludTiburon : MonoBehaviour
         vidasActuales -= cantidadDano;
         Debug.Log($"¡Tiburón golpeado! Vidas restantes: {vidasActuales}");
 
-        // Actualizamos los corazones visuales inmediatamente
-        ActualizarCorazonesUI();
+        ActualizarCorazones();
 
         if (pantallaRoja != null) StartCoroutine(EfectoPantallaRoja());
 
@@ -65,28 +51,19 @@ public class SaludTiburon : MonoBehaviour
         StartCoroutine(IFrames());
     }
 
-    // 🎯 NUEVO MÉTODO: Dibuja los corazones iniciales en pantalla de forma dinámica
-    private void CrearCorazonesUI()
+    private void CrearCorazones()
     {
-        // Limpiamos por si acaso
-        foreach (GameObject corazon in listaCorazones) Destroy(corazon);
-        listaCorazones.Clear();
-
-        // Creamos tantos clones del corazón como vidas máximas tenga
         for (int i = 0; i < vidasMaximas; i++)
         {
-            GameObject nuevoCorazon = Instantiate(corazonPrefab, contenedorCorazones);
-            listaCorazones.Add(nuevoCorazon);
+            GameObject Corazon = Instantiate(corazonPrefab, contenedorCorazones);
+            listaCorazones.Add(Corazon);
         }
     }
 
-    // 🎯 NUEVO MÉTODO: Apaga los corazones perdidos
-    private void ActualizarCorazonesUI()
+    private void ActualizarCorazones()
     {
         for (int i = 0; i < listaCorazones.Count; i++)
         {
-            // Si el índice es menor que nuestras vidas actuales, el corazón se enciende.
-            // Si sufrimos daño, los corazones del final se apagarán automáticamente.
             if (i < vidasActuales)
             {
                 listaCorazones[i].SetActive(true);
@@ -101,7 +78,7 @@ public class SaludTiburon : MonoBehaviour
     private IEnumerator EfectoPantallaRoja()
     {
         pantallaRoja.SetActive(true);
-        yield return new WaitForSeconds(duracionFlash);
+        yield return new WaitForSeconds(0.2f);
         pantallaRoja.SetActive(false);
     }
 
@@ -111,7 +88,7 @@ public class SaludTiburon : MonoBehaviour
         float tiempoPasado = 0f;
         float intervaloParpadeo = 0.1f; 
 
-        while (tiempoPasado < duracionInvencibilidadHit)
+        while (tiempoPasado < duracionInvencibilidad)
         {
             if (spriteRenderer != null)
             {

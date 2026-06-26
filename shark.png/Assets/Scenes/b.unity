@@ -2523,7 +2523,6 @@ GameObject:
   - component: {fileID: 1608249640}
   - component: {fileID: 1608249642}
   - component: {fileID: 1608249641}
-  - component: {fileID: 1608249643}
   - component: {fileID: 1608249644}
   m_Layer: 8
   m_Name: Carpa_0
@@ -2546,7 +2545,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::VidaEnemigo
   vidaMaxima: 3
   sangre: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
-  sangreMuerte: {fileID: 0}
+  sangreMuerte: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
 --- !u!212 &1608249637
 SpriteRenderer:
   serializedVersion: 2
@@ -2634,16 +2633,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MovimientoAleatorio
   velocidadMax: 3
-  tiempoCaminandoMax: 3
-  tiempoCaminandoMin: 1
-  tiempoEsperaMax: 2
-  tiempoEsperaMin: 0.5
-  suavizadoGiroYAceleracion: 4
-  distanciaDeteccionPared: 1.5
+  distanciaDeteccionPared: 3
   capaParedes:
     serializedVersion: 2
-    m_Bits: 0
-  anguloAperturaSensores: 35
+    m_Bits: 5312
 --- !u!50 &1608249640
 Rigidbody2D:
   serializedVersion: 5
@@ -2744,22 +2737,6 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 2.1819246, y: 0.3794662}
   m_Radius: 2.971251
---- !u!114 &1608249643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1608249634}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b0ed7f38638b81469fc11a7a3cc2dd5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AnimacionMeneitoPng
-  velocidadMeneito: 25
-  anguloMeneito: 6
-  velocidadIdle: 3
-  anguloIdle: 2.5
 --- !u!114 &1608249644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3161,14 +3138,14 @@ GameObject:
   - component: {fileID: 1823208207}
   - component: {fileID: 1823208206}
   - component: {fileID: 1823208205}
-  - component: {fileID: 1823208215}
   - component: {fileID: 1823208210}
   - component: {fileID: 1823208209}
   - component: {fileID: 1823208212}
-  - component: {fileID: 1823208213}
   - component: {fileID: 1823208214}
   - component: {fileID: 1823208216}
   - component: {fileID: 1823208217}
+  - component: {fileID: 1823208218}
+  - component: {fileID: 1823208219}
   m_Layer: 7
   m_Name: Shark_0
   m_TagString: Untagged
@@ -3324,9 +3301,8 @@ MonoBehaviour:
   vidasMaximas: 10
   contenedorCorazones: {fileID: 1012171154}
   corazonPrefab: {fileID: 7358474754684837988, guid: adf184d20f55a514c9dd4f759754200a, type: 3}
-  duracionInvencibilidadHit: 1.5
+  duracionInvencibilidad: 1.5
   pantallaRoja: {fileID: 597953927}
-  duracionFlash: 1
 --- !u!60 &1823208210
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -3434,22 +3410,6 @@ MonoBehaviour:
   colorFantasma: {r: 0.3018868, g: 0.3018868, b: 0.3018868, a: 0.6117647}
   tiempoVidaFantasma: 0.4
   tiempoEntreFantasmas: 0.02
---- !u!114 &1823208213
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1823208203}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b0ed7f38638b81469fc11a7a3cc2dd5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Animacion
-  velocidadMeneito: 30
-  anguloMeneito: 3
-  velocidadIdle: 1
-  anguloIdle: 7
 --- !u!114 &1823208214
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3463,24 +3423,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AsfixiaTiburon
   tiempoLimiteQuieto: 4
-  tiempoEntreGolpesConsecutivos: 1.5
   danoPorAsfixia: 1
   colorAsfixia: {r: 0.2, g: 0.5, b: 1, a: 1}
-  velocidadParpadeoAlerta: 0.15
-  velocidadParpadeoCritico: 0.06
---- !u!114 &1823208215
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1823208203}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b547f27eb21ae8447bb209700e0b74cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MovimientoTiburon
-  velocidad: 15
+  velocidadParpadeo: 0.15
 --- !u!114 &1823208216
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3517,6 +3462,35 @@ MonoBehaviour:
   duracionMordisco: 0.15
   danoMordisco: 1
   colliderBoca: {fileID: 2078902677}
+--- !u!114 &1823208218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823208203}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b0ed7f38638b81469fc11a7a3cc2dd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimacionMeneitoPng
+  velocidadMeneito: 30
+  anguloMeneito: 3
+  velocidadIdle: 3
+  anguloIdle: 2.5
+--- !u!114 &1823208219
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823208203}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b547f27eb21ae8447bb209700e0b74cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MovimientoTiburon
+  velocidad: 15
 --- !u!1 &1948435052
 GameObject:
   m_ObjectHideFlags: 0
