@@ -45,7 +45,7 @@ public class VidaEnemigo : MonoBehaviour
         sr.color = Color.white;
     }
 
-    private void Morir()
+    public void Morir()
     {
         if (sangreMuerte != null)
         {

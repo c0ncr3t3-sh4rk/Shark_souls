@@ -1,121 +1,50 @@
 using UnityEngine;
 using System.Collections;
-using UnityEngine.InputSystem;
 
-public class MinaSubmarina : Proyectil
+public class MinaSubmarina : MonoBehaviour, IParryable
 {
     [Header("Configuración de la Mina")]
     [SerializeField] private float tiempoAntesDeExplotar = 2f; 
     [SerializeField] private float radioDeExplosion = 2.5f; 
-    [SerializeField] private float retrasoReaccionEnCadena = 0.15f;
+    [SerializeField] private int danoAObjetivos = 3; 
 
-    [Header("Valores de Daño")]
-    [SerializeField] private int danoAlJugador = 1; 
-    [SerializeField] private int danoAlEnemigo = 3; 
-
-    [Header("Efecto Visual de Parpadeo Rojo")]
+    [Header("Efecto de Parpadeo Rojo")]
     [SerializeField] private float velocidadParpadeoInicial = 0.3f; 
-    [SerializeField] private float velocidadParpadeoFinal = 0.06f; 
+    [SerializeField] private Color colorParpadeoAlerta = Color.red;
 
     [Header("Gráficos de la Explosión")]
     [SerializeField] private Sprite spriteExplosion; 
-    [SerializeField] private Color colorParpadeoAlerta = Color.red;
 
     private SpriteRenderer spriteRenderer;
-    private Collider2D[] todosLosColliders;
+    private Rigidbody2D rb;
     private bool yaSeActivo = false;
-    private bool detonacionInminente = false; 
-
-    public bool estaPorExplotar => yaSeActivo && !haExplotado;
     private bool haExplotado = false;
+    private bool fueParreada = false;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        todosLosColliders = GetComponents<Collider2D>();
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (fueParreado)
-        {
-            if (collision.gameObject.GetComponent<SaludTiburon>() != null) return;
-
-            bool esEnemigo = collision.gameObject.GetComponent<VidaEnemigo>() != null;
-            bool esPared = collision.gameObject.layer == LayerMask.NameToLayer("Paredes");
-            bool esOtraMina = collision.gameObject.GetComponent<MinaSubmarina>() != null;
-
-            if (esEnemigo || esPared || esOtraMina)
-            {
-                Detonar();
-                return;
-            }
-        }
-
-        MinaSubmarina otraMina = collision.gameObject.GetComponent<MinaSubmarina>();
-        if (otraMina != null)
-        {
-            ActivarMina();
-            otraMina.ActivarMina();
-        }
+        rb = GetComponent<Rigidbody2D>();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (fueParreado)
-        {
-            if (collision.GetComponent<SaludTiburon>() != null) return;
+        if (yaSeActivo || haExplotado || fueParreada) return;
 
-            bool esEnemigoParreado = collision.GetComponent<VidaEnemigo>() != null;
-            bool esPared = collision.gameObject.layer == LayerMask.NameToLayer("Paredes");
-
-            if (esEnemigoParreado || esPared)
-            {
-                Detonar();
-                return;
-            }
-        }
-
-        if (yaSeActivo) return;
-
-        bool esJugador = collision.GetComponent<SaludTiburon>() != null;
-        bool esEnemigo = collision.GetComponent<VidaEnemigo>() != null; 
-
-        if (esJugador || esEnemigo)
+        // Si cualquier cosa con vida (Jugador o Enemigo) pasa cerca, la mina se activa
+        if (collision.GetComponent<SaludTiburon>() != null || collision.GetComponent<VidaEnemigo>() != null)
         {
             ActivarMina();
         }
     }
 
-    public void ActivarMina(bool porOndaExpansiva = false)
+    public void ActivarMina()
     {
-        if (detonacionInminente) return;
-
-        if (porOndaExpansiva)
-        {
-            detonacionInminente = true;
-            yaSeActivo = true;
-            
-            StopAllCoroutines(); 
-            StartCoroutine(SecuenciaRetrasoCadena());
-            return;
-        }
-
         if (!yaSeActivo)
         {
             yaSeActivo = true;
             StartCoroutine(SecuenciaActivacionMina());
         }
-    }
-
-    private IEnumerator SecuenciaRetrasoCadena()
-    {
-        if (spriteRenderer != null) spriteRenderer.color = colorParpadeoAlerta;
-
-        yield return new WaitForSeconds(retrasoReaccionEnCadena);
-
-        StartCoroutine(SecuenciaExplosionVisual());
     }
 
     private IEnumerator SecuenciaActivacionMina()
@@ -125,7 +54,7 @@ public class MinaSubmarina : Proyectil
         while (tiempoPasado < tiempoAntesDeExplotar)
         {
             float progreso = tiempoPasado / tiempoAntesDeExplotar;
-            float intervaloActual = Mathf.Lerp(velocidadParpadeoInicial, velocidadParpadeoFinal, progreso);
+            float intervaloActual = Mathf.Lerp(velocidadParpadeoInicial, (velocidadParpadeoInicial / 5), progreso);
 
             if (spriteRenderer != null)
             {
@@ -136,96 +65,84 @@ public class MinaSubmarina : Proyectil
             tiempoPasado += intervaloActual;
         }
 
-        if (spriteRenderer != null) spriteRenderer.color = Color.white;
-
-        StartCoroutine(SecuenciaExplosionVisual());
+        DetonarEnArea();
     }
 
-    private IEnumerator SecuenciaExplosionVisual()
+    // --- INTEGRACIÓN CON TU SISTEMA DE PARRY ---
+    public void OnParry(GameObject parriedBy, int damage)
     {
+        if (haExplotado) return;
+
+        StopAllCoroutines(); // Detiene el parpadeo y la cuenta atrás para explotar
+        if (spriteRenderer != null) spriteRenderer.color = Color.white; // Resetea el color
+
+        fueParreada = true;
+        yaSeActivo = false;
+
+        // Le inyectamos tu script estrella reutilizable
+        ProyectilDevuelto proyectil = gameObject.GetComponent<ProyectilDevuelto>() ?? gameObject.AddComponent<ProyectilDevuelto>();
+        
+        // Saldrá disparada hacia el ratón girando y dejando imágenes residuales
+        proyectil.Disparar(40f, damage + 2);
+
+        // Desactivamos este script de la mina para que el viaje lo controle ProyectilDevuelto
+        this.enabled = false;
+    }
+
+    // Este método lo llamará el ProyectilDevuelto automáticamente si choca contra una pared o enemigo tras el parry
+    private void ImpactarYRestaurar()
+    {
+        DetonarEnArea();
+    }
+
+    private void DetonarEnArea()
+    {
+        if (haExplotado) return;
         haExplotado = true;
 
-        foreach (var col in todosLosColliders)
-        {
-            if (col != null) col.enabled = false;
-        }
+        StopAllCoroutines();
 
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector2.zero;
-            rb.bodyType = RigidbodyType2D.Kinematic; 
-        }
+        // Desactivar físicas y colisionadores propios de la mina
+        foreach (var col in GetComponents<Collider2D>()) { if (col != null) col.enabled = false; }
+        if (rb != null) { rb.linearVelocity = Vector2.zero; rb.bodyType = RigidbodyType2D.Kinematic; }
 
+        // Cambiar visual al sprite de explosión escalado al radio real
         if (spriteExplosion != null && spriteRenderer != null)
         {
-            spriteRenderer.color = Color.white; 
             spriteRenderer.sprite = spriteExplosion;
-
             float tamanoSpriteOriginal = spriteRenderer.sprite.bounds.size.x;
             float escalaRequerida = (radioDeExplosion * 2f) / tamanoSpriteOriginal;
             transform.localScale = new Vector3(escalaRequerida, escalaRequerida, 1f);
         }
 
-        AplicarDanoYBuscarMinas();
-
-        yield return new WaitForSeconds(0.25f);
-
-        Destroy(gameObject);
-    }
-
-    private void AplicarDanoYBuscarMinas()
-    {
-        Debug.Log($"¡BOOM! {gameObject.name} detonó.");
-
+        // Buscar a quién dañar en el radio circular
         Collider2D[] objetosAlcanzados = Physics2D.OverlapCircleAll(transform.position, radioDeExplosion);
-
         foreach (Collider2D col in objetosAlcanzados)
         {
             if (col.gameObject == gameObject) continue;
 
-            MinaSubmarina minaVecina = col.GetComponent<MinaSubmarina>();
-            if (minaVecina != null)
+            // Daño al Jugador (Solo si la mina explotó sola. Si fue parreada, el jugador es inmune a su explosión)
+            SaludTiburon vidaJugador = col.GetComponent<SaludTiburon>();
+            if (vidaJugador != null && !fueParreada)
             {
-                minaVecina.ActivarMina(true);
+                vidaJugador.RecibirDano(1); // Daño fijo al jugador
                 continue;
             }
 
-            SaludTiburon vidaJugador = col.GetComponent<SaludTiburon>();
-            if (vidaJugador != null)
-            {
-                if (!fueParreado)
-                {
-                    vidaJugador.RecibirDano(danoAlJugador);
-                }
-                continue; 
-            }
-
-            VidaEnemigo vidaEnemigo = col.GetComponent<VidaEnemigo>();
+            // Daño a Enemigos (Afecta tanto a otros enemigos como a otras minas vecinas si tienen VidaEnemigo)
+            VidaEnemigo vidaEnemigo = col.GetComponent<VidaEnemigo>() ?? col.GetComponentInParent<VidaEnemigo>();
             if (vidaEnemigo != null)
             {
-                vidaEnemigo.RecibirDano(danoAlEnemigo);
+                vidaEnemigo.RecibirDano(danoAObjetivos);
             }
         }
-    }
 
-    public override void OnParry(GameObject parriedBy, int damage)
-    {
-        if (estaPorExplotar)
-        {
-            base.OnParry(parriedBy, damage);
-        }
-    }
-
-    public void Detonar()
-    {
-        if (haExplotado) return;
-        StopAllCoroutines();
-        StartCoroutine(SecuenciaExplosionVisual());
+        Destroy(gameObject, 0.25f); // Tiempo para que se vea el sprite de la explosión antes de borrarse
     }
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.orange;
+        Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, radioDeExplosion);
     }
 }

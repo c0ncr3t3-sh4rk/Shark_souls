@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class MovimientoAleatorio : MonoBehaviour
+public class MovimientoAleatorio : MonoBehaviour, IParryable
 {
     [Header("Configuración")]
     [SerializeField] private float velocidadMax = 3f;
@@ -72,5 +72,15 @@ public class MovimientoAleatorio : MonoBehaviour
             estaMoviendose = false;
             yield return new WaitForSeconds(Random.Range(0.5f, 2f));
         }
+    }
+
+    public void OnParry(GameObject parriedBy, int damage)
+    {
+        StopAllCoroutines();
+        this.enabled = false;
+
+        ProyectilDevuelto proyectil = gameObject.GetComponent<ProyectilDevuelto>() ?? gameObject.AddComponent<ProyectilDevuelto>();
+
+        proyectil.Disparar(50f, damage + 5);
     }
 }
