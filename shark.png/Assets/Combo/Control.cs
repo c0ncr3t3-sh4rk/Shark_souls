@@ -7,7 +7,6 @@ using System.Collections.Generic;
 public class Combo : MonoBehaviour
 {
     public static Combo Instancia;
-    private bool esMulticolor = false;
 
     [Header("Referencias")]
     private TextMeshProUGUI texto;
