@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class AnimacionMeneitoPng : MonoBehaviour
+public class Animacion : MonoBehaviour
 {
     private MovimientoTiburon movTiburon;
     private Rigidbody2D rb;

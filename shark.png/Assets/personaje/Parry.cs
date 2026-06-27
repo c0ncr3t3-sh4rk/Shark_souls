@@ -4,17 +4,17 @@ using UnityEngine.InputSystem;
 
 public class Parry : MonoBehaviour
 {
-    [Header("Sprites de Animación Cutre")]
+    [Header("Sprites")]
     [SerializeField] private Sprite spriteNormal; 
     [SerializeField] private Sprite spriteParry; 
     [SerializeField] private float duracionParry = 0.2f; 
 
     [Header("Configuración")]
-    [SerializeField] private Collider2D colisionadorParry;
+    [SerializeField] private Collider2D colliderParry;
 
     [Header("Efectos de Éxito de Parry")]
-    [SerializeField] private GameObject efectoPantallaParry; 
-    [SerializeField] private float duracionEfectoPantalla = 0.15f;
+    [SerializeField] private GameObject efectoPantalla; 
+    [SerializeField] private float duracionEfectoPantalla = 0.27f;
     [SerializeField] private AudioClip sonidoParry;
 
     private SpriteRenderer spriteRenderer; 
@@ -24,71 +24,64 @@ public class Parry : MonoBehaviour
 
     private void Awake()
     {
+        efectoPantalla.SetActive(false);
         spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteNormal != null) spriteRenderer.sprite = spriteNormal;
+        spriteRenderer.sprite = spriteNormal;
         
-        if (colisionadorParry != null) colisionadorParry.enabled = false;
+        colliderParry.enabled = false;
 
-        // Buscamos o agregamos un AudioSource en el tiburón
         audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
     }
 
     public void OnAttackSec(InputValue value)
     {
         if (value.isPressed && !AtaqueTiburon.estaOcupado)
         {
-            StartCoroutine(RutinaParry());
+            StartCoroutine(IntentarParry());
         }
     }
 
-    private IEnumerator RutinaParry()
+    private IEnumerator IntentarParry()
     {
         estaHaciendoParry = true;
         AtaqueTiburon.estaOcupado = true;
         
-        if (spriteParry != null) spriteRenderer.sprite = spriteParry;
-        if (colisionadorParry != null) colisionadorParry.enabled = true;
-
+        spriteRenderer.sprite = spriteParry;
+        colliderParry.enabled = true;
         yield return new WaitForSeconds(duracionParry);
 
-        if (colisionadorParry != null) colisionadorParry.enabled = false;
-        if (spriteNormal != null) spriteRenderer.sprite = spriteNormal;
+        colliderParry.enabled = false;
+        spriteRenderer.sprite = spriteNormal;
 
         AtaqueTiburon.estaOcupado = false;
         estaHaciendoParry = false;
     }
 
-    public bool IntentarParry(GameObject atacante, int danoDeAtaque)
+    public bool HacerParry(GameObject atacante, int danoDeAtaque)
     {
         if (estaHaciendoParry)
         {
             Debug.Log("¡Parry realizado con éxito contra " + atacante.name + "!");
+            audioSource.PlayOneShot(sonidoParry);
 
             // Reproducir efecto visual en pantalla
-            if (efectoPantallaParry != null)
+            if (efectoPantalla != null)
             {
-                StartCoroutine(RutinaEfectoPantalla());
-            }
-
-            // Reproducir efecto de sonido
-            if (sonidoParry != null && audioSource != null)
-            {
-                audioSource.PlayOneShot(sonidoParry);
+                StartCoroutine(EfectoPantalla());
             }
 
             // Si el atacante es parreable, ejecutar su lógica propia
-            IParryable parryable = atacante.GetComponent<IParryable>();
-            if (parryable == null) parryable = atacante.GetComponentInParent<IParryable>();
-            if (parryable == null) parryable = atacante.GetComponentInChildren<IParryable>();
+            IParryable parryable = atacante.GetComponentInParent<IParryable>() ?? 
+                                   atacante.GetComponentInChildren<IParryable>() ?? 
+                                   atacante.GetComponent<IParryable>();
 
             if (parryable != null)
             {
                 parryable.OnParry(gameObject, danoDeAtaque);
             }
+
+            Combo.Instancia.Kill();
+            estaHaciendoParry = false;
 
             return true;
         }
@@ -96,40 +89,26 @@ public class Parry : MonoBehaviour
         return false;
     }
 
-    private IEnumerator RutinaEfectoPantalla()
+    private IEnumerator EfectoPantalla()
     {
-        efectoPantallaParry.SetActive(true);
-        yield return new WaitForSeconds(duracionEfectoPantalla);
-        efectoPantallaParry.SetActive(false);
+        Animacion animacion = GetComponent<Animacion>();
+        animacion.enabled = false;
+        efectoPantalla.SetActive(true);
+        Time.timeScale = 0f; 
+
+        yield return new WaitForSecondsRealtime(duracionEfectoPantalla);
+
+        Time.timeScale = 1f;
+        animacion.enabled = true;
+        efectoPantalla.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (!estaHaciendoParry) return;
-
-        // Comprobamos si el objeto es parreable
-        IParryable parryable = collision.GetComponent<IParryable>();
-        if (parryable == null) parryable = collision.GetComponentInParent<IParryable>();
-        if (parryable == null) parryable = collision.GetComponentInChildren<IParryable>();
-
-        if (parryable != null)
+        if (collision.IsTouching(colliderParry) && (collision.CompareTag("Ataque") || collision.CompareTag("Proyectil")))
         {
-            // Si es una mina, solo permitimos parry si está por explotar
-            MinaSubmarina mina = collision.GetComponent<MinaSubmarina>();
-            if (mina == null) mina = collision.GetComponentInParent<MinaSubmarina>();
-            if (mina == null) mina = collision.GetComponentInChildren<MinaSubmarina>();
-
-            if (mina != null && !mina.estaPorExplotar)
-            {
-                return;
-            }
-
-            IntentarParry(collision.gameObject, 0);
-        }
-        else if (collision.CompareTag("Proyectil"))
-        {
-            Debug.Log("¡Parry realizado contra proyectil!");
-            // Lógica de parry aquí
+            HacerParry(collision.gameObject, 0);
         }
     }
 }

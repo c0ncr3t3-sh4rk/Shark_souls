@@ -20,7 +20,7 @@ public class MovimientoAleatorio : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(RutinaMovimiento());
+        StartCoroutine(Movimiento());
     }
 
     private void FixedUpdate()
@@ -57,7 +57,7 @@ public class MovimientoAleatorio : MonoBehaviour
         transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
     }
 
-    private IEnumerator RutinaMovimiento()
+    private IEnumerator Movimiento()
     {
         while (true)
         {

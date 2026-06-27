@@ -19,7 +19,7 @@ public class VidaEnemigo : MonoBehaviour
         vidaActual -= cantidad;
         Debug.Log(gameObject.name + " ha recibido daño. Vida restante: " + vidaActual);
 
-        Combo.Instancia.RegistrarBaja();
+        Combo.Instancia.Kill();
         
         Sangre();
 
@@ -52,7 +52,7 @@ public class VidaEnemigo : MonoBehaviour
             Instantiate(sangreMuerte, transform.position, Quaternion.identity);
         }
 
-        Combo.Instancia.RegistrarBaja();
+        Combo.Instancia.Kill();
         
         Debug.Log(gameObject.name + " HA MUERTO.");
         Destroy(gameObject);

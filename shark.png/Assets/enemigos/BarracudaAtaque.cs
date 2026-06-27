@@ -163,7 +163,7 @@ public class BarracudaAtaque : MonoBehaviour, IParryable
                 if (parry == null) parry = col.GetComponentInParent<Parry>();
                 if (parry == null) parry = col.GetComponentInChildren<Parry>();
 
-                if (parry != null && parry.IntentarParry(gameObject, danoAlJugador))
+                if (parry != null && parry.HacerParry(gameObject, danoAlJugador))
                 {
                     // El daño, stun y efectos de pantalla/sonido se manejan dentro de IntentarParry
                     return;

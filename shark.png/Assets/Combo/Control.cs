@@ -11,16 +11,15 @@ public class Combo : MonoBehaviour
 
     [Header("Referencias")]
     private TextMeshProUGUI texto;
-    [SerializeField] private GameObject prefabCuadrado; 
-    [SerializeField] private Transform contenedorCuadrados;
-    private List<Image> listaCuadrados = new List<Image>();
+    [SerializeField] private GameObject prefabDientes; 
+    [SerializeField] private Transform contenedorDientes;
 
     [Header("Ajustes")]
-    private int comboActual = 0;
-    private float tiempoUltimaBaja = 0f;
     [SerializeField] private float tiempoParaPerderCombo = 10f;
     
-    // Variables para el temblor
+    private List<Image> listaDientes = new List<Image>();
+    private int comboActual = 0;
+    private float tiempoUltimaBaja = 0f;
     private Vector3 posOriginal;
 
     private void Awake() 
@@ -29,34 +28,30 @@ public class Combo : MonoBehaviour
         texto = GetComponent<TextMeshProUGUI>();
         posOriginal = transform.localPosition;
         
-        // Crear los cuadrados al iniciar
-        for (int i = 0; i < 7; i++) // Ajusta a los que quieras
+        for (int i = 0; i < 7; i++)
         {
-            GameObject obj = Instantiate(prefabCuadrado, contenedorCuadrados);
-            listaCuadrados.Add(obj.GetComponent<Image>());
+            GameObject obj = Instantiate(prefabDientes, contenedorDientes);
+            listaDientes.Add(obj.GetComponent<Image>());
         }
     }
 
     private void Update()
     {
-        // 1. Lógica de tiempo con cuadrados
         float tiempoRestante = tiempoParaPerderCombo - (Time.time - tiempoUltimaBaja);
         float porcentaje = Mathf.Clamp01(tiempoRestante / tiempoParaPerderCombo);
         
-        int cuadradosVisibles = Mathf.CeilToInt(porcentaje * listaCuadrados.Count);
-        for (int i = 0; i < listaCuadrados.Count; i++)
+        int cuadradosVisibles = Mathf.CeilToInt(porcentaje * listaDientes.Count);
+        for (int i = 0; i < listaDientes.Count; i++)
         {
-            listaCuadrados[i].enabled = (i < cuadradosVisibles && comboActual > 0);
+            listaDientes[i].enabled = (i < cuadradosVisibles && comboActual > 0);
         }
 
-        // 2. Reset combo
         if (comboActual > 0 && Time.time - tiempoUltimaBaja > tiempoParaPerderCombo)
         {
             comboActual = 0;
             texto.text = "";
         }
 
-        // 3. Efecto temblor
         if (comboActual >= 100)
         {
             transform.localPosition = posOriginal + (Vector3)Random.insideUnitCircle * 10f;
@@ -74,24 +69,20 @@ public class Combo : MonoBehaviour
             transform.localPosition = posOriginal + (Vector3)Random.insideUnitCircle * 1f;
         }
 
-        // disco a partir de 100
         if (comboActual >= 100)
         {
-            // Efecto arcoíris: recorre el espectro de color según el tiempo
             float hue = Mathf.PingPong(Time.time * 2f, 1f); 
             texto.color = Color.HSVToRGB(hue, 1f, 1f);
             
-            // Opcional: Aumentar el tamaño un poco para que sea "tochisimo"
             texto.fontSize = 170 + Mathf.Sin(Time.time * 10f) * 10f; 
         }
         else
         {
-            // Si no es multicolor, mantenemos el tamaño normal
             texto.fontSize = 170; 
         }
     }
 
-    public void RegistrarBaja()
+    public void Kill()
     {
         comboActual++;
         tiempoUltimaBaja = Time.time;
