@@ -108,6 +108,8 @@ public class ProyectilDevuelto : MonoBehaviour
 
                 Destroy(this);
             }
+
+            //miVida.Morir();
         }
         else
         {

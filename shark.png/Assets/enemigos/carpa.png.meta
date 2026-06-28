@@ -116,12 +116,12 @@ TextureImporter:
       name: carpa_0
       rect:
         serializedVersion: 2
-        x: 51
-        y: 79
-        width: 1177
-        height: 595
+        x: 0
+        y: 0
+        width: 1809
+        height: 980
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: db34e0d3a8a42e140bb0af06c6ab29cf
     internalID: 0
     vertices: []
     indices: 

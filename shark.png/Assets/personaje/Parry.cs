@@ -101,6 +101,7 @@ public class Parry : MonoBehaviour
         Time.timeScale = 1f;
         animacion.enabled = true;
         efectoPantalla.SetActive(false);
+        spriteRenderer.sprite = spriteNormal;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
