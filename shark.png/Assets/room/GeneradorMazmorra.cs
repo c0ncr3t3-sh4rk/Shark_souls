@@ -17,6 +17,22 @@ namespace SharkSouls.Dungeon
             public float peso;
         }
 
+        [System.Serializable]
+        public class SalaEspecialConfig
+        {
+            [Tooltip("Prefab de la sala especial")]
+            public GameObject prefab;
+            [Tooltip("Peso o ratio de aparición")]
+            [Range(0f, 100f)]
+            public float peso;
+            [Tooltip("Número máximo de veces que puede aparecer en la mazmorra")]
+            public int maxApariciones = 1;
+            [Tooltip("Indica si esta sala especial debe generar enemigos o es segura")]
+            public bool generaEnemigos = true;
+            [HideInInspector]
+            public int aparicionesRestantes;
+        }
+
         [Header("Prefabs de Salas")]
         [Tooltip("Lista de posibles prefabs para la sala de inicio. Se elegirá uno al azar.")]
         public List<SalaConfig> prefabsStart;
@@ -24,6 +40,15 @@ namespace SharkSouls.Dungeon
         public List<SalaConfig> prefabsBoss;
         [Tooltip("Lista de prefabs de salas normales con sus pesos de probabilidad.")]
         public List<SalaConfig> prefabsNormales;
+        [Tooltip("Lista de prefabs de salas especiales (ej. tiendas, tesoros).")]
+        public List<SalaEspecialConfig> prefabsEspeciales;
+
+        [Header("Dificultad y Enemigos")]
+        [Tooltip("Multiplicador de dificultad. 1 = Normal, 2 = Doble de enemigos, 3 = Triple...")]
+        [Range(1, 10)]
+        public int dificultadGlobal = 1;
+
+        [HideInInspector] public int salasCompletadas = 0;
 
         [Header("Configuración del Grid")]
         public int numSalas = 15;
@@ -40,11 +65,17 @@ namespace SharkSouls.Dungeon
         public float probabilidadBucle = 0.05f;
 
         private Dictionary<Vector2Int, SalaBase> gridSalas = new Dictionary<Vector2Int, SalaBase>();
-        private List<Vector2Int> posicionesOcupadas = new List<Vector2Int>();
+        private HashSet<Vector2Int> posicionesOcupadas = new HashSet<Vector2Int>();
         private Dictionary<Vector2Int, List<Vector2Int>> conexiones = new Dictionary<Vector2Int, List<Vector2Int>>();
 
         private void Start()
         {
+            if (prefabsEspeciales != null)
+            {
+                foreach (var especial in prefabsEspeciales)
+                    especial.aparicionesRestantes = especial.maxApariciones;
+            }
+
             GenerarMazmorra();
         }
 
@@ -58,6 +89,13 @@ namespace SharkSouls.Dungeon
             gridSalas.Clear();
             posicionesOcupadas.Clear();
             conexiones.Clear();
+            salasCompletadas = 0;
+
+            if (prefabsEspeciales != null)
+            {
+                foreach (var especial in prefabsEspeciales)
+                    especial.aparicionesRestantes = especial.maxApariciones;
+            }
 
             Vector2Int posActual = Vector2Int.zero;
             CrearSala(posActual, prefabsStart[Random.Range(0, prefabsStart.Count)].prefab, TipoSala.Start, CapaSala.Superficie);
@@ -66,18 +104,55 @@ namespace SharkSouls.Dungeon
             {
                 bool colocado = false;
                 
-                List<GameObject> prefabsParaProbar = prefabsNormales
-                    .Where(c => c.prefab != null)
-                    .Select(config => {
-                        float peso = Mathf.Max(0.01f, config.peso);
-                        if (config.peso <= 0f) peso = 10f;
-                        double u = Random.value;
-                        double key = System.Math.Pow(u, 1.0 / peso);
-                        return new { Prefab = config.prefab, Key = key };
-                    })
-                    .OrderByDescending(x => x.Key)
-                    .Select(x => x.Prefab)
-                    .ToList();
+                List<GameObject> prefabsParaProbar = new List<GameObject>();
+
+                // Agregar especiales primero si pueden spawnear
+                if (prefabsEspeciales != null)
+                {
+                    var especialesProbar = prefabsEspeciales
+                        .Where(c => c.prefab != null && c.aparicionesRestantes > 0)
+                        .Select(config => {
+                            float peso = Mathf.Max(0.01f, config.peso);
+                            double u = Random.value;
+                            double key = System.Math.Pow(u, 1.0 / peso);
+                            return new { Config = config, Prefab = config.prefab, Key = key, EsEspecial = true };
+                        }).ToList();
+
+                    // Se añaden también las normales para competir en peso
+                    var normalesProbar = prefabsNormales
+                        .Where(c => c.prefab != null)
+                        .Select(config => {
+                            float peso = Mathf.Max(0.01f, config.peso);
+                            if (config.peso <= 0f) peso = 10f;
+                            double u = Random.value;
+                            double key = System.Math.Pow(u, 1.0 / peso);
+                            return new { Config = (SalaEspecialConfig)null, Prefab = config.prefab, Key = key, EsEspecial = false };
+                        }).ToList();
+
+                    var combinadas = especialesProbar.Concat(normalesProbar)
+                        .OrderByDescending(x => x.Key)
+                        .ToList();
+
+                    foreach (var item in combinadas)
+                    {
+                        prefabsParaProbar.Add(item.Prefab);
+                    }
+                }
+                else
+                {
+                    prefabsParaProbar = prefabsNormales
+                        .Where(c => c.prefab != null)
+                        .Select(config => {
+                            float peso = Mathf.Max(0.01f, config.peso);
+                            if (config.peso <= 0f) peso = 10f;
+                            double u = Random.value;
+                            double key = System.Math.Pow(u, 1.0 / peso);
+                            return new { Prefab = config.prefab, Key = key };
+                        })
+                        .OrderByDescending(x => x.Key)
+                        .Select(x => x.Prefab)
+                        .ToList();
+                }
 
                 foreach (var prefabElegido in prefabsParaProbar)
                 {
@@ -96,7 +171,17 @@ namespace SharkSouls.Dungeon
                         {
                             if (IntentarEncajarPrefab(prefabElegido, posActual, dir, out Vector2Int pivotPos, out CapaSala nuevaCapa))
                             {
-                                CrearSala(pivotPos, prefabElegido, TipoSala.Normal, nuevaCapa);
+                                bool debeSpawnearEnemigos = true;
+                                TipoSala tipoSalaAsignado = TipoSala.Normal;
+                                if (prefabsEspeciales != null && prefabsEspeciales.Any(e => e.prefab == prefabElegido))
+                                {
+                                    tipoSalaAsignado = TipoSala.Especial;
+                                    var especialConf = prefabsEspeciales.First(e => e.prefab == prefabElegido);
+                                    debeSpawnearEnemigos = especialConf.generaEnemigos;
+                                    especialConf.aparicionesRestantes--;
+                                }
+
+                                CrearSala(pivotPos, prefabElegido, tipoSalaAsignado, nuevaCapa, debeSpawnearEnemigos);
                                 Vector2Int nuevaPos = posActual + dir;
                                 Conectar(posActual, nuevaPos);
                                 posActual = nuevaPos; 
@@ -108,7 +193,8 @@ namespace SharkSouls.Dungeon
 
                     if (colocado) break;
 
-                    List<Vector2Int> celdasOcupadasBarajadas = posicionesOcupadas.OrderBy(x => Random.value).ToList();
+                    List<Vector2Int> celdasOcupadasBarajadas = new List<Vector2Int>(posicionesOcupadas);
+                    celdasOcupadasBarajadas = celdasOcupadasBarajadas.OrderBy(x => Random.value).ToList();
                     foreach (var pos in celdasOcupadasBarajadas)
                     {
                         CapaSala capaAlt = gridSalas[pos].capa;
@@ -122,7 +208,17 @@ namespace SharkSouls.Dungeon
                         {
                             if (IntentarEncajarPrefab(prefabElegido, pos, dir, out Vector2Int pivotPos, out CapaSala nuevaCapa))
                             {
-                                CrearSala(pivotPos, prefabElegido, TipoSala.Normal, nuevaCapa);
+                                bool debeSpawnearEnemigos = true;
+                                TipoSala tipoSalaAsignado = TipoSala.Normal;
+                                if (prefabsEspeciales != null && prefabsEspeciales.Any(e => e.prefab == prefabElegido))
+                                {
+                                    tipoSalaAsignado = TipoSala.Especial;
+                                    var especialConf = prefabsEspeciales.First(e => e.prefab == prefabElegido);
+                                    debeSpawnearEnemigos = especialConf.generaEnemigos;
+                                    especialConf.aparicionesRestantes--;
+                                }
+
+                                CrearSala(pivotPos, prefabElegido, tipoSalaAsignado, nuevaCapa, debeSpawnearEnemigos);
                                 Vector2Int nuevaPos = pos + dir;
                                 Conectar(pos, nuevaPos);
                                 posActual = nuevaPos; 
@@ -195,7 +291,7 @@ namespace SharkSouls.Dungeon
             return false;
         }
 
-        private void CrearSala(Vector2Int posGrid, GameObject prefab, TipoSala tipo, CapaSala capa)
+        private void CrearSala(Vector2Int posGrid, GameObject prefab, TipoSala tipo, CapaSala capa, bool spawnearEnemigos = true)
         {
             Vector3 posicionMundo = new Vector3(posGrid.x * tamanoCeldaX, posGrid.y * tamanoCeldaY, 0);
             GameObject inst = Instantiate(prefab, posicionMundo, Quaternion.identity, this.transform);
@@ -208,6 +304,18 @@ namespace SharkSouls.Dungeon
             salaScript.capa = capa;
             salaScript.posGrid = posGrid;
 
+            // Añadir LimiteSala al collider de la cámara
+            if (salaScript.boundsCamara != null && salaScript.boundsCamara.gameObject.GetComponent<LimiteSala>() == null)
+            {
+                salaScript.boundsCamara.gameObject.AddComponent<LimiteSala>();
+            }
+
+            if (spawnearEnemigos && (tipo == TipoSala.Normal || tipo == TipoSala.Especial))
+            {
+                salaScript.requiereSpawneo = true;
+                salaScript.dificultadAlCrear = dificultadGlobal;
+            }
+
             List<Vector2Int> celdasLocal = salaScript.celdasOcupadas;
             if (celdasLocal == null || celdasLocal.Count == 0)
             {
@@ -218,10 +326,7 @@ namespace SharkSouls.Dungeon
             {
                 Vector2Int celdaGlobal = posGrid + celdaLocal;
                 gridSalas[celdaGlobal] = salaScript;
-                if (!posicionesOcupadas.Contains(celdaGlobal))
-                {
-                    posicionesOcupadas.Add(celdaGlobal);
-                }
+                posicionesOcupadas.Add(celdaGlobal);
             }
         }
 
@@ -466,12 +571,13 @@ namespace SharkSouls.Dungeon
 
         private void GenerarBuclesAdicionales()
         {
-            for (int i = 0; i < posicionesOcupadas.Count; i++)
+            var listaPos = new List<Vector2Int>(posicionesOcupadas);
+            for (int i = 0; i < listaPos.Count; i++)
             {
-                for (int j = i + 1; j < posicionesOcupadas.Count; j++)
+                for (int j = i + 1; j < listaPos.Count; j++)
                 {
-                    Vector2Int pos1 = posicionesOcupadas[i];
-                    Vector2Int pos2 = posicionesOcupadas[j];
+                    Vector2Int pos1 = listaPos[i];
+                    Vector2Int pos2 = listaPos[j];
 
                     if (Vector2Int.Distance(pos1, pos2) == 1f && !EstanConectadas(pos1, pos2))
                     {
@@ -543,6 +649,11 @@ namespace SharkSouls.Dungeon
             {
                 sala.ConfigurarPuertasVisuales();
             }
+        }
+
+        public void SalaCompletadaCallback()
+        {
+            salasCompletadas++;
         }
     }
 }

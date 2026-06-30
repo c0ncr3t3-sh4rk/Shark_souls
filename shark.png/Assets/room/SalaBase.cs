@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+
 namespace SharkSouls.Dungeon
 {
     public enum CapaSala
@@ -8,12 +9,15 @@ namespace SharkSouls.Dungeon
         Medio,
         Profundo
     }
+
     public enum TipoSala
     {
         Start,
         Normal,
-        Boss
+        Boss,
+        Especial
     }
+
     public class SalaBase : MonoBehaviour
     {
         [Header("Datos de la Sala")]
@@ -26,19 +30,138 @@ namespace SharkSouls.Dungeon
         public List<ConectorPuerta> conectores = new List<ConectorPuerta>();
         public Vector2Int posGrid;
 
+        [Header("Estado de la Sala")]
+        public bool salaCompletada = false;
+
         [Header("Límites de Cámara")]
         [Tooltip("Collider usado para delimitar hasta dónde puede llegar la cámara en esta sala.")]
         public BoxCollider2D boundsCamara;
 
+        [HideInInspector] public bool requiereSpawneo;
+        [Header("Generador de Enemigos Local")]
+        [Tooltip("El generador de esta sala. Si está vacío, buscará uno en este mismo GameObject.")]
+        public GeneradorEnemigos generadorEnemigos;
+        
+        [HideInInspector] public int dificultadAlCrear = 1;
+
+        private readonly List<GameObject> enemigosVivos = new List<GameObject>();
+        private bool puertasCerradas;
+        private bool esperandoEntrada;
+        private Transform jugadorTransform;
+        private GeneradorMazmorra mazmorraRef;
+
+        private GeneradorMazmorra Mazmorra
+        {
+            get
+            {
+                if (mazmorraRef == null)
+                    mazmorraRef = FindAnyObjectByType<GeneradorMazmorra>();
+                return mazmorraRef;
+            }
+        }
+
+        private void Awake()
+        {
+            if (generadorEnemigos == null)
+            {
+                generadorEnemigos = GetComponent<GeneradorEnemigos>();
+            }
+        }
+
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.CompareTag("Player"))
+            if (!collision.CompareTag("Player")) return;
+
+            CamaraSala cam = Camera.main.GetComponent<CamaraSala>();
+            if (cam != null && boundsCamara != null)
+                cam.FijarSalaActual(this);
+
+            if (salaCompletada || (tipo != TipoSala.Normal && tipo != TipoSala.Especial)) return;
+            
+            Debug.Log($"[SalaBase] Player entró. requiereSpawneo: {requiereSpawneo}");
+            if (!requiereSpawneo) return;
+
+            esperandoEntrada = true;
+            jugadorTransform = collision.transform;
+            Debug.Log($"[SalaBase] Esperando entrada...");
+        }
+
+        private void Update()
+        {
+            if (!esperandoEntrada || jugadorTransform == null || boundsCamara == null) return;
+
+            Bounds b = boundsCamara.bounds;
+            
+            // Comprobación manual 2D ignorando el eje Z y aplicando el margen interno de 1.5 unidades (-3 total)
+            float margen = 1.5f;
+            bool dentroX = jugadorTransform.position.x > (b.min.x + margen) && jugadorTransform.position.x < (b.max.x - margen);
+            bool dentroY = jugadorTransform.position.y > (b.min.y + margen) && jugadorTransform.position.y < (b.max.y - margen);
+
+            if (!dentroX || !dentroY) return;
+
+            Debug.Log($"[SalaBase] Jugador dentro de zona segura. Ejecutando spawn.");
+            esperandoEntrada = false;
+            EjecutarSpawnYCerrarPuertas();
+        }
+
+        private void EjecutarSpawnYCerrarPuertas()
+        {
+            if (requiereSpawneo && generadorEnemigos != null)
             {
-                CamaraSala cam = Camera.main.GetComponent<CamaraSala>();
-                if (cam != null && boundsCamara != null)
-                {
-                    cam.FijarSalaActual(this);
-                }
+                int completadas = Mazmorra != null ? Mazmorra.salasCompletadas : 0;
+                generadorEnemigos.SpawnEnemigos(this, completadas, dificultadAlCrear);
+                requiereSpawneo = false;
+            }
+            else
+            {
+                // Si no hay generador, cerramos las puertas directamente si hay enemigos de antes (poco probable)
+                ChequearPuertasYSpawneo();
+            }
+        }
+
+        public void ChequearPuertasYSpawneo()
+        {
+            if (enemigosVivos.Count > 0)
+                CerrarPuertas();
+        }
+
+        public void RegistrarEnemigo(GameObject enemigo)
+        {
+            if (!enemigosVivos.Contains(enemigo))
+                enemigosVivos.Add(enemigo);
+        }
+
+        public void EnemigoEliminado(GameObject enemigo)
+        {
+            enemigosVivos.Remove(enemigo);
+
+            if (enemigosVivos.Count == 0 && puertasCerradas)
+            {
+                salaCompletada = true;
+                AbrirPuertas();
+
+                if (Mazmorra != null)
+                    Mazmorra.SalaCompletadaCallback();
+            }
+        }
+
+        private void CerrarPuertas()
+        {
+            puertasCerradas = true;
+            foreach (var conector in conectores)
+            {
+                if (conector.estaConectado && conector.visualBloqueo != null)
+                    conector.visualBloqueo.SetActive(true);
+            }
+        }
+
+        public void AbrirPuertas()
+        {
+            puertasCerradas = false;
+            foreach (var conector in conectores)
+            {
+                if (conector.estaConectado && conector.visualBloqueo != null)
+                    conector.visualBloqueo.SetActive(false);
             }
         }
 
@@ -47,13 +170,13 @@ namespace SharkSouls.Dungeon
             foreach (var conector in conectores)
             {
                 if (conector.visualPuerta != null)
-                {
                     conector.visualPuerta.SetActive(conector.estaConectado);
-                }
+
                 if (conector.visualPared != null)
-                {
                     conector.visualPared.SetActive(!conector.estaConectado);
-                }
+
+                if (conector.visualBloqueo != null)
+                    conector.visualBloqueo.SetActive(false);
             }
         }
     }
@@ -65,6 +188,7 @@ namespace SharkSouls.Dungeon
         public Vector2Int direccion;
         public GameObject visualPuerta;
         public GameObject visualPared;
+        public GameObject visualBloqueo;
         public bool estaConectado;
     }
 }

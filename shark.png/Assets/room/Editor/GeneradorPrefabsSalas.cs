@@ -14,6 +14,7 @@ namespace SharkSouls.Dungeon.Editor
         private TipoSala tipo = TipoSala.Normal;
         private string estiloTag = "PorDefecto";
         private Sprite wallSprite;
+        private Sprite spritePuerta;
 
         private float tamanoCeldaX = 20f;
         private float tamanoCeldaY = 20f;
@@ -43,6 +44,7 @@ namespace SharkSouls.Dungeon.Editor
             tipo = (TipoSala)EditorGUILayout.EnumPopup("Tipo", tipo);
             estiloTag = EditorGUILayout.TextField("Tag Estilo", estiloTag);
             wallSprite = (Sprite)EditorGUILayout.ObjectField("Textura Pared", wallSprite, typeof(Sprite), false);
+            spritePuerta = (Sprite)EditorGUILayout.ObjectField("Textura Puerta", spritePuerta, typeof(Sprite), false);
 
             GUILayout.Space(10);
             GUILayout.Label("Forma de la Sala (Diseña tu L, Cuadrado, etc)", EditorStyles.boldLabel);
@@ -88,7 +90,7 @@ namespace SharkSouls.Dungeon.Editor
             salaScript.celdasOcupadas.Clear();
             salaScript.conectores.Clear();
 
-            float grosorPared = 1f;
+            float grosorPared = 1.33f;
             float huecoPuerta = 4f;
 
             // Recorrer el grid para construir
@@ -205,13 +207,22 @@ namespace SharkSouls.Dungeon.Editor
             trozo2.transform.localPosition = offsetNegativo;
             AplicarSpriteYColision(trozo2, escalaTrozos, sprite);
 
+            // 3. PUERTA BLOQUEANTE
+            GameObject bloqueo = new GameObject($"Bloqueo_{baseName}");
+            bloqueo.transform.SetParent(puerta.transform);
+            bloqueo.transform.localPosition = posicion; // en el centro del muro
+            Vector2 escalaBloqueo = horizontal ? new Vector2(huecoPuerta, grosor) : new Vector2(grosor, huecoPuerta);
+            AplicarSpriteYColision(bloqueo, escalaBloqueo, spritePuerta != null ? spritePuerta : sprite);
+            bloqueo.SetActive(false); // oculta por defecto
+
             // Enlazar al script
             ConectorPuerta conector = new ConectorPuerta
             {
                 celdaLocal = celda,
                 direccion = dir,
                 visualPuerta = puerta,
-                visualPared = pared
+                visualPared = pared,
+                visualBloqueo = bloqueo
             };
             salaScript.conectores.Add(conector);
         }
@@ -232,6 +243,7 @@ namespace SharkSouls.Dungeon.Editor
             }
 
             obj.AddComponent<BoxCollider2D>();
+            obj.layer = LayerMask.NameToLayer("Salas");
         }
     }
 }

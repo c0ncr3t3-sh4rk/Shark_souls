@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class VidaEnemigo : MonoBehaviour
 {
@@ -8,23 +9,31 @@ public class VidaEnemigo : MonoBehaviour
     [Header("Visuales")]
     [SerializeField] private GameObject sangre;
     [SerializeField] private GameObject sangreMuerte;
+    public SharkSouls.Dungeon.SalaBase salaAsignada;
+
+    private SpriteRenderer sr;
 
     private void Awake()
     {
         vidaActual = vidaMaxima;
+        sr = GetComponent<SpriteRenderer>();
     }
 
     public void RecibirDano(int cantidad)
     {
         vidaActual -= cantidad;
-        Debug.Log(gameObject.name + " ha recibido daño. Vida restante: " + vidaActual);
 
-        Combo.Instancia.Kill();
+        if (Combo.Instancia != null)
+            Combo.Instancia.Kill();
         
-        Sangre();
+        if (sangre != null)
+        {
+            GameObject objSangre = Instantiate(sangre, transform.position, Quaternion.identity);
+            Destroy(objSangre, 1f); 
+        }
 
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        StartCoroutine(EfectoDano(sr));
+        if (sr != null)
+            StartCoroutine(EfectoDano());
 
         if (vidaActual <= 0)
         {
@@ -32,13 +41,7 @@ public class VidaEnemigo : MonoBehaviour
         }
     }
 
-    private void Sangre()
-    {
-        GameObject Sangre = Instantiate(sangre, transform.position, Quaternion.identity);
-        Destroy(Sangre, 1f); 
-    }
-
-    private System.Collections.IEnumerator EfectoDano(SpriteRenderer sr)
+    private IEnumerator EfectoDano()
     {
         sr.color = Color.red;
         yield return new WaitForSeconds(0.1f);
@@ -52,9 +55,14 @@ public class VidaEnemigo : MonoBehaviour
             Instantiate(sangreMuerte, transform.position, Quaternion.identity);
         }
 
-        Combo.Instancia.Kill();
+        if (Combo.Instancia != null)
+            Combo.Instancia.Kill();
         
-        Debug.Log(gameObject.name + " HA MUERTO.");
+        if (salaAsignada != null)
+        {
+            salaAsignada.EnemigoEliminado(gameObject);
+        }
+
         Destroy(gameObject);
     }
 }

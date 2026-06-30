@@ -7,45 +7,52 @@ using System.Collections.Generic;
 
 namespace SharkSouls.Dungeon.Editor
 {
-    public class GeneradorSalasAutomatico : UnityEditor.Editor
+    public class GeneradorSalasAutomatico : UnityEditor.EditorWindow
     {
+        private Sprite wallSprite;
+        private Sprite doorSprite;
+
         [MenuItem("SharkSouls/AUTO-GENERAR 5 Salas")]
-        public static void GenerarSalas()
+        public static void MostrarVentana()
         {
-            // 1. Buscar la textura llamada "Wall"
-            string[] guids = AssetDatabase.FindAssets("Wall t:Texture2D");
-            Sprite wallSprite = null;
-            if (guids.Length > 0)
+            GetWindow<GeneradorSalasAutomatico>("Auto-Generar Salas");
+        }
+
+        private void OnGUI()
+        {
+            GUILayout.Label("Generación Rápida de 5 Salas Básicas", EditorStyles.boldLabel);
+            GUILayout.Space(10);
+
+            wallSprite = (Sprite)EditorGUILayout.ObjectField("Textura Pared", wallSprite, typeof(Sprite), false);
+            doorSprite = (Sprite)EditorGUILayout.ObjectField("Textura Puerta", doorSprite, typeof(Sprite), false);
+
+            GUILayout.Space(20);
+
+            if (GUILayout.Button("Generar 5 Salas Automáticas", GUILayout.Height(40)))
             {
-                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
-                foreach(var asset in assets) 
-                {
-                    if (asset is Sprite s) 
-                    {
-                        wallSprite = s;
-                        break;
-                    }
-                }
+                GenerarSalas();
             }
-            
+        }
+
+        private void GenerarSalas()
+        {
             if (wallSprite == null)
             {
-                Debug.LogWarning("No se encontró un Sprite en la textura 'Wall'. Se generarán cuadrados en blanco.");
+                Debug.LogWarning("No has asignado un Sprite para la Pared. Se generarán bloques en blanco.");
             }
 
             // 2. Generar las 5 salas base requeridas
-            GenerarPrefab("Sala Start", CapaSala.Superficie, TipoSala.Start, wallSprite);
-            GenerarPrefab("Sala Boss", CapaSala.Profundo, TipoSala.Boss, wallSprite);
-            GenerarPrefab("Sala Normal Superficie", CapaSala.Superficie, TipoSala.Normal, wallSprite);
-            GenerarPrefab("Sala Normal Medio", CapaSala.Medio, TipoSala.Normal, wallSprite);
-            GenerarPrefab("Sala Normal Profundo", CapaSala.Profundo, TipoSala.Normal, wallSprite);
+            GenerarPrefab("Sala Start", CapaSala.Superficie, TipoSala.Start, wallSprite, doorSprite);
+            GenerarPrefab("Sala Boss", CapaSala.Profundo, TipoSala.Boss, wallSprite, doorSprite);
+            GenerarPrefab("Sala Normal Superficie", CapaSala.Superficie, TipoSala.Normal, wallSprite, doorSprite);
+            GenerarPrefab("Sala Normal Medio", CapaSala.Medio, TipoSala.Normal, wallSprite, doorSprite);
+            GenerarPrefab("Sala Normal Profundo", CapaSala.Profundo, TipoSala.Normal, wallSprite, doorSprite);
             
             AssetDatabase.SaveAssets();
             Debug.Log("<color=cyan>¡Las 5 salas indispensables de 20x20 se han generado correctamente con físicas y gráficos!</color>");
         }
         
-        private static void GenerarPrefab(string nombre, CapaSala capa, TipoSala tipo, Sprite wallSprite)
+        private static void GenerarPrefab(string nombre, CapaSala capa, TipoSala tipo, Sprite wallSprite, Sprite doorSprite)
         {
             GameObject salaGO = new GameObject(nombre);
             SalaBase salaScript = salaGO.AddComponent<SalaBase>();
@@ -58,7 +65,7 @@ namespace SharkSouls.Dungeon.Editor
 
             // Tamaño requerido de 20
             float tamano = 20f;
-            float grosorPared = 1f;
+            float grosorPared = 1.33f;
             float huecoPuerta = 4f; // El espacio por donde pasará el jugador
 
             // Collider de la cámara
@@ -68,10 +75,10 @@ namespace SharkSouls.Dungeon.Editor
             salaScript.boundsCamara = colliderCamara;
 
             // Generar los 4 lados de la sala
-            CrearLado(salaGO, "Arriba", new Vector2(0, tamano/2f), new Vector2(tamano, grosorPared), wallSprite, huecoPuerta, true);
-            CrearLado(salaGO, "Abajo", new Vector2(0, -tamano/2f), new Vector2(tamano, grosorPared), wallSprite, huecoPuerta, true);
-            CrearLado(salaGO, "Izquierda", new Vector2(-tamano/2f, 0), new Vector2(grosorPared, tamano), wallSprite, huecoPuerta, false);
-            CrearLado(salaGO, "Derecha", new Vector2(tamano/2f, 0), new Vector2(grosorPared, tamano), wallSprite, huecoPuerta, false);
+            CrearLado(salaGO, "Arriba", new Vector2(0, tamano/2f), new Vector2(tamano, grosorPared), wallSprite, doorSprite, huecoPuerta, true);
+            CrearLado(salaGO, "Abajo", new Vector2(0, -tamano/2f), new Vector2(tamano, grosorPared), wallSprite, doorSprite, huecoPuerta, true);
+            CrearLado(salaGO, "Izquierda", new Vector2(-tamano/2f, 0), new Vector2(grosorPared, tamano), wallSprite, doorSprite, huecoPuerta, false);
+            CrearLado(salaGO, "Derecha", new Vector2(tamano/2f, 0), new Vector2(grosorPared, tamano), wallSprite, doorSprite, huecoPuerta, false);
 
             if (!System.IO.Directory.Exists(Application.dataPath + "/room/Prefabs"))
                 System.IO.Directory.CreateDirectory(Application.dataPath + "/room/Prefabs");
@@ -85,7 +92,7 @@ namespace SharkSouls.Dungeon.Editor
             DestroyImmediate(salaGO);
         }
 
-        private static void CrearLado(GameObject padre, string direccion, Vector2 posicion, Vector2 escalaPared, Sprite sprite, float huecoPuerta, bool horizontal)
+        private static void CrearLado(GameObject padre, string direccion, Vector2 posicion, Vector2 escalaPared, Sprite sprite, Sprite doorSprite, float huecoPuerta, bool horizontal)
         {
             SalaBase s = padre.GetComponent<SalaBase>();
 
@@ -118,6 +125,14 @@ namespace SharkSouls.Dungeon.Editor
             trozo2.transform.localPosition = offsetNegativo;
             AplicarSpriteYColision(trozo2, escalaTrozos, sprite);
 
+            // 3. PUERTA BLOQUEANTE (Se activa al entrar y pelear)
+            GameObject bloqueo = new GameObject($"Bloqueo_{direccion}");
+            bloqueo.transform.SetParent(puerta.transform);
+            bloqueo.transform.localPosition = posicion; // en el centro del muro, no de la sala
+            Vector2 escalaBloqueo = horizontal ? new Vector2(huecoPuerta, grosor) : new Vector2(grosor, huecoPuerta);
+            AplicarSpriteYColision(bloqueo, escalaBloqueo, doorSprite != null ? doorSprite : sprite);
+            bloqueo.SetActive(false); // oculta por defecto
+
             // Enlazar al script
             Vector2Int dir = Vector2Int.zero;
             if (direccion == "Arriba") dir = Vector2Int.up;
@@ -130,7 +145,8 @@ namespace SharkSouls.Dungeon.Editor
                 celdaLocal = Vector2Int.zero,
                 direccion = dir,
                 visualPuerta = puerta,
-                visualPared = pared
+                visualPared = pared,
+                visualBloqueo = bloqueo
             };
             s.conectores.Add(conector);
         }
@@ -152,6 +168,7 @@ namespace SharkSouls.Dungeon.Editor
 
             // Colisión 2D
             obj.AddComponent<BoxCollider2D>();
+            obj.layer = LayerMask.NameToLayer("Salas");
         }
     }
 }
