@@ -36,6 +36,7 @@ public class Barracuda : MonoBehaviour, IParryable
 
     private void Awake()
     {
+        objAtaque.SetActive(false);
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
     }
@@ -197,7 +198,7 @@ public class Barracuda : MonoBehaviour, IParryable
         if (estadoActual == EstadoEnemigo.Atacando && yaHizoPlacaje)
         {
             rb.linearVelocity = Vector2.zero;
-            if (objAtaque != null) objAtaque.SetActive(false);
+            objAtaque.SetActive(false);
 
             temporizadorAturdimiento = 0.5f; 
         }
@@ -219,12 +220,15 @@ public class Barracuda : MonoBehaviour, IParryable
 
     public void OnParry(GameObject parriedBy, int damage)
     {
+        ColisionAtaqueBarracuda scriptHijo = objAtaque.GetComponent<ColisionAtaqueBarracuda>();
+        scriptHijo.StopAllCoroutines(); 
+
         objAtaque.SetActive(false);
         StopAllCoroutines();
         this.enabled = false;
 
         ProyectilDevuelto proyectil = gameObject.GetComponent<ProyectilDevuelto>() ?? gameObject.AddComponent<ProyectilDevuelto>();
-        proyectil.Disparar(50f, damage + 5);
+        proyectil.Disparar(30f, damage + 5);
     }
 
     private void OnDrawGizmosSelected()

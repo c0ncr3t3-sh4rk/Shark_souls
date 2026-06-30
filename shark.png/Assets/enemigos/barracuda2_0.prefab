@@ -140,6 +140,8 @@ MonoBehaviour:
   sangre: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
   sangreMuerte: {fileID: 0}
   salaAsignada: {fileID: 0}
+  costePresupuesto: 0
+  prefabOrigen: {fileID: 0}
 --- !u!70 &8631616696902546386
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
