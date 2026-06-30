@@ -21,7 +21,7 @@ public class DashTiburon : MonoBehaviour
     private SaludTiburon scriptSalud; 
 
     private bool puedeHacerDash = true;
-    private bool estaHaciendoDash = false;
+    public bool estaHaciendoDash = false;
 
     private void Awake()
     {
@@ -50,7 +50,7 @@ public class DashTiburon : MonoBehaviour
         puedeHacerDash = false;
         estaHaciendoDash = true;
 
-        scriptSalud.SetInvencible(true);
+        scriptSalud.SumarI(duracionDash);
 
         scriptMovimiento.enabled = false;
 
@@ -61,8 +61,7 @@ public class DashTiburon : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         scriptMovimiento.enabled = true;
         StopCoroutine(rutinaFantasmas);
-
-        scriptSalud.SetInvencible(false);
+        
         estaHaciendoDash = false;
 
         yield return new WaitForSeconds(tiempoEsperaDash);

@@ -16,10 +16,12 @@ public class Barracuda : MonoBehaviour, IParryable
     [SerializeField] private float rangoAtaque = 1.5f;
 
     [Header("Configuración Barracuda (Persecución y Ataque)")]
-    [SerializeField] private float velocidadPersecucion = 4.5f; // Algo más rápida que la patrulla
-    [SerializeField] private float fuerzaPlacaje = 50f;         // La fuerza del impulso final
-    [SerializeField] private float tiempoCargaAtaque = 1.5f;    // El segundo y medio que se queda quieta
-    [SerializeField] private float tiempoAturdimientoPostAtaque = 1.0f; // El tiempo que se queda "tonta"
+    [SerializeField] private float fuerzaPlacaje = 50f;
+    [SerializeField] private float tiempoCargaAtaque = 1.5f;
+    [SerializeField] private float tiempoAturdimiento = 1.0f;
+
+    [Header("Referencias de Ataque")]
+    [SerializeField] private GameObject objAtaque;
 
     private float temporizadorAturdimiento = 0f;
     private Vector2 direccion;
@@ -27,12 +29,9 @@ public class Barracuda : MonoBehaviour, IParryable
     private bool estaMoviendose = false;
     private float tiempoEnEstado = 0f;
     private float tiempoLimite = 2f;
-
-    // Variables internas para el control del ataque
     private float temporizadorAtaque = 0f;
     private bool yaHizoPlacaje = false;
-    private Vector2 direccionPlacaje;
-
+    private Vector2 direccionAtaque;
     private Rigidbody2D rb;
 
     private void Awake()
@@ -53,14 +52,10 @@ public class Barracuda : MonoBehaviour, IParryable
     private void Update()
     {
         if (jugador == null) return;
+        if (estadoActual == EstadoEnemigo.Atacando) return;
 
         distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
 
-        // Si está atacando (ya sea cargando, haciendo el placaje o recuperándose en el cooldown),
-        // no dejamos que las distancias del Update interrumpan el ataque hasta que pase el tiempo.
-        if (estadoActual == EstadoEnemigo.Atacando) return;
-
-        // Control de transiciones estándar cuando NO está atacando
         if (distanciaAlJugador <= rangoAtaque)
         {
             estadoActual = EstadoEnemigo.Atacando;
@@ -137,14 +132,11 @@ public class Barracuda : MonoBehaviour, IParryable
     {
         if (jugador == null) return;
 
-        // 1. Calcular dirección hacia el jugador
         direccion = ((Vector2)jugador.position - (Vector2)transform.position).normalized;
 
-        // 2. Moverse directamente hacia él usando Lerp para mantener la fluidez física
-        Vector2 velocidadDeseada = direccion * velocidadPersecucion;
-        rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, velocidadDeseada, Time.fixedDeltaTime * 5f);
+        Vector2 velocidad = direccion * (velocidadMax * 1.5f);
+        rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, velocidad, Time.fixedDeltaTime * 5f);
 
-        // 3. Orientar el sprite hacia donde está persiguiendo
         if (rb.linearVelocity.magnitude > 0.1f)
         {
             GirarSprite();
@@ -157,55 +149,57 @@ public class Barracuda : MonoBehaviour, IParryable
 
         temporizadorAtaque += Time.fixedDeltaTime;
 
-        // FASE 1: Carga del ataque (Se queda quieta segundo y medio apuntando)
+        // FASE 1: Carga del ataque (Apuntando)
         if (temporizadorAtaque < tiempoCargaAtaque)
         {
-            // Frenamos a la barracuda poco a poco para que se quede quieta acechando
             rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 10f);
             
-            // Mientras carga, calcula y actualiza la dirección hacia donde está el jugador
-            direccionPlacaje = ((Vector2)jugador.position - (Vector2)transform.position).normalized;
+            direccionAtaque = ((Vector2)jugador.position - (Vector2)transform.position).normalized;
             
-            // Giramos el sprite para que mire al jugador MIENTRAS apunta
             Vector2 velocidadOriginal = rb.linearVelocity;
-            rb.linearVelocity = direccionPlacaje; 
+            rb.linearVelocity = direccionAtaque; 
             GirarSprite();
-            rb.linearVelocity = velocidadOriginal; 
+            rb.linearVelocity = velocidadOriginal;
+
+            objAtaque.SetActive(false);
         }
-        // FASE 2: ¡Placaje gordo! (Se ejecuta en un solo frame al terminar la carga)
+        // FASE 2: ¡Placaje gordo! (Inicio de la embestida)
         else if (!yaHizoPlacaje)
         {
             yaHizoPlacaje = true;
-            temporizadorAturdimiento = 0f; // Reseteamos el reloj del cooldown para la siguiente fase
+            temporizadorAturdimiento = 0f;
             
-            // Le metemos el impulso físico gordo
-            rb.linearVelocity = direccionPlacaje * fuerzaPlacaje;
+            rb.linearVelocity = direccionAtaque * fuerzaPlacaje;
             
-            // Aplicamos el giro una última vez justo antes de salir disparada para que se alinee con el placaje
             Vector2 velocidadOriginal = rb.linearVelocity;
-            rb.linearVelocity = direccionPlacaje;
+            rb.linearVelocity = direccionAtaque;
             GirarSprite();
             rb.linearVelocity = velocidadOriginal;
+
+            objAtaque.SetActive(true);
         }
-        // FASE 3: Envestida en curso y Cooldown (Se queda "tonta")
         else
         {
             temporizadorAturdimiento += Time.fixedDeltaTime;
 
-            // Mientras dure el cooldown, la barracuda va perdiendo velocidad por la fricción del agua
             rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 2f);
 
-            // ¡AQUÍ ESTÁ EL TRUCO! 
-            // Durante todo este tiempo (la envestida y el cooldown), NO llamamos a GirarSprite().
-            // Al no llamarlo, el pez se deslizará manteniendo rígidamente la dirección que tomó en la Fase 2.
-
-            // Si ya ha pasado el tiempo de aturdimiento total...
-            if (temporizadorAturdimiento >= tiempoAturdimientoPostAtaque)
+            if (temporizadorAturdimiento >= tiempoAturdimiento)
             {
-                // Forzamos un pequeño reseteo para que la máquina de estados en el Update pueda sacarla de aquí
-                // (Ya que el Update comprobará que el ataque terminó y la mandará a Perseguir o Patrullar)
+                if (objAtaque != null) objAtaque.SetActive(false);
                 estadoActual = EstadoEnemigo.Patrullando; 
             }
+        }
+    }
+
+    public void DetenerPorImpacto()
+    {
+        if (estadoActual == EstadoEnemigo.Atacando && yaHizoPlacaje)
+        {
+            rb.linearVelocity = Vector2.zero;
+            if (objAtaque != null) objAtaque.SetActive(false);
+
+            temporizadorAturdimiento = 0.5f; 
         }
     }
 
@@ -225,6 +219,7 @@ public class Barracuda : MonoBehaviour, IParryable
 
     public void OnParry(GameObject parriedBy, int damage)
     {
+        objAtaque.SetActive(false);
         StopAllCoroutines();
         this.enabled = false;
 

@@ -19,7 +19,6 @@ public class Parry : MonoBehaviour
 
     private SpriteRenderer spriteRenderer; 
     private AudioSource audioSource;
-
     public bool estaHaciendoParry { get; private set; } = false;
 
     private void Awake()
@@ -70,6 +69,8 @@ public class Parry : MonoBehaviour
                 StartCoroutine(EfectoPantalla());
             }
 
+            Iframes();
+
             // Si el atacante es parreable, ejecutar su lógica propia
             IParryable parryable = atacante.GetComponentInParent<IParryable>() ?? 
                                    atacante.GetComponentInChildren<IParryable>() ?? 
@@ -111,5 +112,11 @@ public class Parry : MonoBehaviour
         {
             HacerParry(collision.gameObject, 0);
         }
+    }
+
+    private void Iframes()
+    {
+        SaludTiburon scriptSalud = GetComponent<SaludTiburon>();
+        scriptSalud.SumarI(1);
     }
 }

@@ -12,7 +12,8 @@ public class SaludTiburon : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private int vidasActuales;
     private List<GameObject> listaCorazones = new List<GameObject>();
-    private bool esInvencible = false;
+    public bool esInvencible = false;
+    private float tiempoI = 0f;
 
     private void Awake()
     {
@@ -23,13 +24,40 @@ public class SaludTiburon : MonoBehaviour
         CrearCorazones();
     }
 
-    public void SetInvencible(bool estado)
+    public void SumarI(float tiempo)
     {
-        if (!esInvencible || estado == false)
+        tiempoI += tiempo;
+
+        if (!esInvencible)
         {
-            esInvencible = estado;
+            StartCoroutine(Invencibilidad());
         }
     }
+
+    private IEnumerator Invencibilidad()
+    {
+        esInvencible = true;
+
+        while (tiempoI > 0f)
+        {
+            tiempoI -= Time.deltaTime;
+            
+            yield return null; 
+        }
+
+        tiempoI = 0f;
+        esInvencible = false;
+    }
+
+    /*public IEnumerator SetInvencible(float time)
+    {   
+
+        if (time > 0)
+        {
+            esInvencible = estado;
+            time = time - ;
+        }
+    }*/
 
     public void RecibirDano(int cantidadDano)
     {
@@ -77,14 +105,21 @@ public class SaludTiburon : MonoBehaviour
 
     private IEnumerator EfectoPantallaRoja()
     {
+        Animacion animacion = GetComponent<Animacion>();
+        animacion.enabled = false;
         pantallaRoja.SetActive(true);
-        yield return new WaitForSeconds(0.2f);
+        Time.timeScale = 0f; 
+
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        Time.timeScale = 1f;
+        animacion.enabled = true;
         pantallaRoja.SetActive(false);
     }
 
     private IEnumerator IFrames()
     {
-        esInvencible = true;
+        SumarI(duracionInvencibilidad);
         float tiempoPasado = 0f;
         float intervaloParpadeo = 0.1f; 
 
@@ -107,7 +142,6 @@ public class SaludTiburon : MonoBehaviour
             c.a = 1f;
             spriteRenderer.color = c;
         }
-        esInvencible = false;
     }
 
     private void Muerte()

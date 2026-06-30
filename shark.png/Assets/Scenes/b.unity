@@ -1588,7 +1588,7 @@ Transform:
   m_GameObject: {fileID: 1133283395}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.190001, y: -17.6, z: 0}
+  m_LocalPosition: {x: -0.020000458, y: -3.3199987, z: 0}
   m_LocalScale: {x: 0.9063, y: 0.9063, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2156,7 +2156,7 @@ Transform:
   m_GameObject: {fileID: 1472482321}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.66, y: -17.310001, z: 0}
+  m_LocalPosition: {x: 2.51, y: -3.03, z: 0}
   m_LocalScale: {x: 0.9063, y: 0.9063, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3748,10 +3748,38 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2109743843802710890, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
+      propertyPath: m_Radius
+      value: 0.88504475
+      objectReference: {fileID: 0}
+    - target: {fileID: 2109743843802710890, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
+      propertyPath: m_Offset.x
+      value: -2.0821517
+      objectReference: {fileID: 0}
+    - target: {fileID: 2109743843802710890, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
+      propertyPath: m_Offset.y
+      value: 0.1082564
+      objectReference: {fileID: 0}
+    - target: {fileID: 4403618876355373952, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4859244417903913733, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
       propertyPath: efectoPantalla
       value: 
       objectReference: {fileID: 600674585}
+    - target: {fileID: 6155694928812476400, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
+      propertyPath: m_Size.x
+      value: 1.3769306
+      objectReference: {fileID: 0}
+    - target: {fileID: 6155694928812476400, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
+      propertyPath: m_Offset.x
+      value: -2.6302068
+      objectReference: {fileID: 0}
+    - target: {fileID: 6155694928812476400, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
+      propertyPath: m_Offset.y
+      value: 0.10980861
+      objectReference: {fileID: 0}
     - target: {fileID: 8923012397462302499, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
       propertyPath: m_Name
       value: Shark_0

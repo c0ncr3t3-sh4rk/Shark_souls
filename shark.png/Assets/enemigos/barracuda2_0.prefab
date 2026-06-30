@@ -32,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.15, y: -1.3, z: 0}
-  m_LocalScale: {x: -0.32, y: 0.2701259, z: 0.33182}
+  m_LocalScale: {x: -0.4, y: 0.33765736, z: 0.414775}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1854913727784649140}
@@ -198,10 +198,10 @@ MonoBehaviour:
   distanciaAlJugador: 0
   rangoAlerta: 5
   rangoAtaque: 1.5
-  velocidadPersecucion: 4.5
-  fuerzaPlacaje: 50
+  fuerzaPlacaje: 30
   tiempoCargaAtaque: 1.5
-  tiempoAturdimientoPostAtaque: 3
+  tiempoAturdimiento: 1
+  objAtaque: {fileID: 6028215247626731932}
 --- !u!114 &8262833928695884874
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -228,6 +228,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1854913727784649140}
   - component: {fileID: 4469866018365386570}
+  - component: {fileID: 7003505717288704791}
   m_Layer: 0
   m_Name: Ataque
   m_TagString: Ataque
@@ -287,3 +288,15 @@ CapsuleCollider2D:
   m_Offset: {x: 1.4913931, y: 0.020373136}
   m_Size: {x: 0.8010615, y: 2.121565}
   m_Direction: 0
+--- !u!114 &7003505717288704791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6028215247626731932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc9797a8486702e43ad35e3145001392, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColisionAtaqueBarracuda
