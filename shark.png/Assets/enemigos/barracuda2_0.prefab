@@ -32,8 +32,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.15, y: -1.3, z: 0}
-  m_LocalScale: {x: -0.96437824, y: 0.81407356, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: -0.32, y: 0.2701259, z: 0.33182}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1854913727784649140}
   m_Father: {fileID: 0}
@@ -136,7 +136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e78be2cbac0248146a458db6abc0c3ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VidaEnemigo
-  vidaMaxima: 15
+  vidaMaxima: 5
   sangre: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
   sangreMuerte: {fileID: 0}
   salaAsignada: {fileID: 0}
@@ -174,8 +174,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.620255, y: -0.031159522}
-  m_Size: {x: 2.7783606, y: 0.79936135}
+  m_Offset: {x: -0.056883067, y: -0.031159608}
+  m_Size: {x: 3.9051561, y: 0.7993678}
   m_Direction: 1
 --- !u!114 &6287070167437768602
 MonoBehaviour:
@@ -189,11 +189,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97ccc443ecbf1714d942a280b7588956, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BarracudaAtaque
+  estadoActual: 0
   velocidadMax: 3
-  distanciaDeteccion: 1.5
+  distanciaDeteccionPared: 1.5
   capaParedes:
     serializedVersion: 2
     m_Bits: 5184
+  distanciaAlJugador: 0
+  rangoAlerta: 5
+  rangoAtaque: 1.5
+  velocidadPersecucion: 4.5
+  fuerzaPlacaje: 50
+  tiempoCargaAtaque: 1.5
+  tiempoAturdimientoPostAtaque: 3
 --- !u!114 &8262833928695884874
 MonoBehaviour:
   m_ObjectHideFlags: 0

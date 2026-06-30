@@ -1,0 +1,154 @@
+using UnityEngine;
+
+public class Carpa : MonoBehaviour, IParryable
+{
+    private enum EstadoEnemigo { Patrullando, Persiguiendo, Atacando }
+    [SerializeField] private EstadoEnemigo estadoActual = EstadoEnemigo.Patrullando;
+
+    [Header("Base")]
+    [SerializeField] private float velocidadMax = 3f;
+    [SerializeField] private float distanciaDeteccionPared = 1.5f; 
+    [SerializeField] private LayerMask capaParedes; 
+
+    [Header("Distancias")]
+    [SerializeField] private float distanciaAlJugador; 
+    [SerializeField] private float rangoAlerta = 5f;
+    [SerializeField] private float rangoAtaque = 1.5f;
+
+    private Vector2 direccion;
+    private Transform jugador;
+    private bool estaMoviendose = false;
+    private float tiempoEnEstado = 0f;
+    private float tiempoLimite = 2f;
+
+    private Rigidbody2D rb;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        rb.freezeRotation = true;
+    }
+
+    //buscar jugador
+    private void Start()
+    {
+        GameObject objetoJugador = GameObject.FindWithTag("Player");
+        jugador = objetoJugador.transform;
+    }
+
+    private void Update()
+    {
+        distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
+
+        if (distanciaAlJugador <= rangoAtaque)
+        {
+            estadoActual = EstadoEnemigo.Atacando;
+        }
+        else if (distanciaAlJugador <= rangoAlerta)
+        {
+            estadoActual = EstadoEnemigo.Persiguiendo;
+        }
+        else
+        {
+            estadoActual = EstadoEnemigo.Patrullando;
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        switch (estadoActual)
+        {
+            case EstadoEnemigo.Patrullando:
+                Patrulla();
+                break;
+
+            case EstadoEnemigo.Persiguiendo:
+                Patrulla();
+                break;
+
+            case EstadoEnemigo.Atacando:
+                Patrulla();
+                break;
+        }
+    }
+
+    private void Patrulla()
+    {
+        tiempoEnEstado += Time.fixedDeltaTime;
+
+        if (tiempoEnEstado >= tiempoLimite)
+        {
+            tiempoEnEstado = 0f;
+            estaMoviendose = !estaMoviendose;
+
+            if (estaMoviendose)
+            {
+                direccion = Random.insideUnitCircle.normalized;
+                tiempoLimite = Random.Range(1f, 5f); 
+            }
+            else
+            {
+                tiempoLimite = Random.Range(0.5f, 2f);
+            }
+        }
+
+        if (estaMoviendose)
+        {
+            RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.3f, direccion, distanciaDeteccionPared, capaParedes);
+            if (hit.collider != null)
+            {
+                direccion = Random.insideUnitCircle.normalized;
+            }
+        }
+
+        Vector2 velocidadDeseada = estaMoviendose ? (direccion * velocidadMax) : Vector2.zero;
+        rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, velocidadDeseada, Time.fixedDeltaTime * 4f);
+
+        if (estaMoviendose && rb.linearVelocity.magnitude > 0.1f)
+        {
+            GirarSprite();
+        }
+    }
+
+    private void Persecucion()
+    {
+        
+    }
+
+    private void Ataque()
+    {
+        
+    }
+
+    private void GirarSprite()
+    {
+        float anguloZ = Mathf.Atan2(rb.linearVelocity.y, rb.linearVelocity.x) * Mathf.Rad2Deg;
+        anguloZ = Mathf.Round(anguloZ / 45f) * 45f;
+
+        Vector3 escala = transform.localScale;
+        escala.x = (rb.linearVelocity.x < 0) ? -Mathf.Abs(escala.x) : Mathf.Abs(escala.x);
+        transform.localScale = escala;
+
+        if (rb.linearVelocity.x < 0) anguloZ += 180f;
+
+        transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
+    }
+
+    public void OnParry(GameObject parriedBy, int damage)
+    {
+        StopAllCoroutines();
+        this.enabled = false;
+
+        ProyectilDevuelto proyectil = gameObject.GetComponent<ProyectilDevuelto>() ?? gameObject.AddComponent<ProyectilDevuelto>();
+        proyectil.Disparar(50f, damage + 5);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, rangoAlerta);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, rangoAtaque);
+    }
+}

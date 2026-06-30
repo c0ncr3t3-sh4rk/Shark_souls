@@ -52,7 +52,8 @@ public class VidaEnemigo : MonoBehaviour
     {
         if (sangreMuerte != null)
         {
-            Instantiate(sangreMuerte, transform.position, Quaternion.identity);
+            GameObject objSangre = Instantiate(sangreMuerte, transform.position, Quaternion.identity);
+            Destroy(objSangre, 1f); 
         }
 
         if (Combo.Instancia != null)
