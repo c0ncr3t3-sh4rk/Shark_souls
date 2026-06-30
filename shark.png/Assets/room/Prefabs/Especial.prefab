@@ -2846,14 +2846,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SharkSouls.Dungeon.GeneradorEnemigos
   enemigosDisponibles:
   - prefab: {fileID: 5526588677566135864, guid: ca08d5b88626abb4982275bfe29e4238, type: 3}
-    peso: 0
+    peso: 31.5
+    coste: 2
+    maximoPorSala: 0
   - prefab: {fileID: 4897203831263170463, guid: ac8c76782b818b6408d716edc6e35048, type: 3}
     peso: 0
-  enemigosBase: 15
-  incrementoPorSala: 10
-  radioSeguridadJugador: 7
-  maxEnemigosPorGrupo: 5
+    coste: 1
+    maximoPorSala: 3
+  presupuestoBase: 1000
+  incrementoPresupuestoPorSala: 10
+  presupuestoSimultaneoMaximo: 200
+  umbralRefuerzos: 20
+  maxEnemigosPorGrupo: 50
   tiempoEntreGrupos: 0.2
+  delayRefuerzos: 2
+  capaObstaculos:
+    serializedVersion: 2
+    m_Bits: 4096
+  radioSeguridadJugador: 7
+  spawnCompletado: 0
 --- !u!1 &2689673230571440650
 GameObject:
   m_ObjectHideFlags: 0
