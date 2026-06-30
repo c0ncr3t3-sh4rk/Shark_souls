@@ -1756,11 +1756,11 @@ MonoBehaviour:
     peso: 0
   prefabsEspeciales:
   - prefab: {fileID: 2681682223623875885, guid: a29f278577b0c8c4a97e7e0a22605e9e, type: 3}
-    peso: 0
+    peso: 30.9
     maxApariciones: 2
     generaEnemigos: 1
     aparicionesRestantes: 0
-  dificultadGlobal: 10
+  dificultadGlobal: 1
   salasCompletadas: 0
   numSalas: 30
   tamanoCeldaX: 20

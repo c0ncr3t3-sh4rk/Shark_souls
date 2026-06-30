@@ -14,6 +14,8 @@ namespace SharkSouls.Dungeon
 
         private void OnTriggerExit2D(Collider2D collision)
         {
+            if (!gameObject.activeInHierarchy || !collision.gameObject.activeInHierarchy) return;
+
             if (((1 << collision.gameObject.layer) & layerMaskEnemigos) == 0) return;
 
             VidaEnemigo vida = collision.GetComponent<VidaEnemigo>();

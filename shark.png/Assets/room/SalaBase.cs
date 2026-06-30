@@ -45,6 +45,7 @@ namespace SharkSouls.Dungeon
         [HideInInspector] public int dificultadAlCrear = 1;
 
         private readonly List<GameObject> enemigosVivos = new List<GameObject>();
+        public int CantidadEnemigosVivos => enemigosVivos.Count;
         private bool puertasCerradas;
         private bool esperandoEntrada;
         private Transform jugadorTransform;
@@ -133,12 +134,34 @@ namespace SharkSouls.Dungeon
 
         public void EnemigoEliminado(GameObject enemigo)
         {
-            enemigosVivos.Remove(enemigo);
+            if (enemigosVivos.Remove(enemigo))
+            {
+                VidaEnemigo vida = enemigo.GetComponent<VidaEnemigo>();
+                if (vida != null && generadorEnemigos != null)
+                {
+                    generadorEnemigos.LiberarPresupuestoSimultaneo(vida.costePresupuesto, vida.prefabOrigen);
+                }
 
-            if (enemigosVivos.Count == 0 && puertasCerradas)
+                ChequearFinSala();
+            }
+        }
+
+        public void ChequearFinSala()
+        {
+            if (salaCompletada) return;
+
+            enemigosVivos.RemoveAll(e => e == null || !e.activeInHierarchy);
+
+            bool spawnTerminado = generadorEnemigos == null || generadorEnemigos.spawnCompletado;
+
+            if (spawnTerminado && enemigosVivos.Count == 0)
             {
                 salaCompletada = true;
-                AbrirPuertas();
+                
+                if (puertasCerradas)
+                {
+                    AbrirPuertas();
+                }
 
                 if (Mazmorra != null)
                     Mazmorra.SalaCompletadaCallback();

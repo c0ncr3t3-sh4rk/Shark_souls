@@ -10,13 +10,20 @@ public class VidaEnemigo : MonoBehaviour
     [SerializeField] private GameObject sangre;
     [SerializeField] private GameObject sangreMuerte;
     public SharkSouls.Dungeon.SalaBase salaAsignada;
+    [HideInInspector] public int costePresupuesto;
+    [HideInInspector] public GameObject prefabOrigen;
 
     private SpriteRenderer sr;
 
     private void Awake()
     {
-        vidaActual = vidaMaxima;
         sr = GetComponent<SpriteRenderer>();
+    }
+
+    private void OnEnable()
+    {
+        vidaActual = vidaMaxima;
+        if (sr != null) sr.color = Color.white;
     }
 
     public void RecibirDano(int cantidad)
@@ -63,6 +70,9 @@ public class VidaEnemigo : MonoBehaviour
             salaAsignada.EnemigoEliminado(gameObject);
         }
 
-        Destroy(gameObject);
+        if (SharkSouls.Utils.SimpleObjectPool.Instance != null)
+            SharkSouls.Utils.SimpleObjectPool.Instance.ReturnToPool(gameObject);
+        else
+            Destroy(gameObject);
     }
 }
