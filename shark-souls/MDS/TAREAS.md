@@ -1,10 +1,12 @@
-- [ ] parry
-- [ ] sangre al golpear y matar
-- [ ] salas
-- [ ] combo
-- [ ] contador
-- [ ] camara y bordes
+- [x] parry
+- [x] sangre al golpear y matar
+- [x] salas
+- [x] Combo
+- [ ] Contador
+- [ ] Puntuación
+- [ ] camara y bordes -bug
 - [ ] enemigos
+- [x] Spawn enemigos
 - [ ] efectos
 - [ ] algun boss
 - [ ] superficie
@@ -12,5 +14,8 @@
 - [ ] visuales de las mejoras
 - [ ] musica
 - [ ] efectos de sonido
-- [ ] generacion procedural
+- [x] generacion procedural
 - [ ] bosses
+- [ ] Sala Casino
+- [ ] Traga Perras Final Sala (Sin recompensa asegurada)
+- [ ] Hit Market

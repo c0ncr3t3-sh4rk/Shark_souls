@@ -18,8 +18,8 @@ el pathfinding se vuelve loco cuando estas en area de deteccion a traves de un m
 el sprite de atacar esta en una capa superior al base en el tiburon
 ```
 
-- [ ] 
+- [ ] Cámara
 ```
-
+Si no se cruza del todo la sala puedes volver hacia atras y la camara se queda en esa misma sala
 ```
 
