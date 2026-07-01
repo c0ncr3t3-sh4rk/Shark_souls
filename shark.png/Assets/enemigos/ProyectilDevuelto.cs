@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 public class ProyectilDevuelto : MonoBehaviour
@@ -10,12 +11,14 @@ public class ProyectilDevuelto : MonoBehaviour
 
     [SerializeField] private float velocidadGiro = 5400f;
 
+    [Header("Duración del efecto parry")]
+    [SerializeField] private float tiempoVidaMaxima = 3f;
+
     [Header("Imágenes Residuales")]
     [SerializeField] private Color colorFantasma = new Color(0f, 0.8f, 1f, 0.5f);
     [SerializeField] private float tiempoVidaFantasma = 0.4f;
     [SerializeField] private float tiempoEntreFantasmas = 0.02f;
 
-    // Cambiamos el método para que calcule la dirección internamente
     public void Disparar(float fuerza, int dano)
     {
         rb = GetComponent<Rigidbody2D>();
@@ -23,7 +26,7 @@ public class ProyectilDevuelto : MonoBehaviour
         danoAEnemigos = dano;
         lanzado = true;
 
-        Vector3 posicionRatonMundo = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 posicionRatonMundo = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         posicionRatonMundo.z = 0f;
         Vector2 direccionAlRaton = ((Vector2)posicionRatonMundo - (Vector2)transform.position).normalized;
 
@@ -31,6 +34,11 @@ public class ProyectilDevuelto : MonoBehaviour
         rb.linearVelocity = direccionAlRaton * fuerza;
 
         StartCoroutine(ImagenesResiduales());
+
+        if (GetComponent<VidaEnemigo>() != null)
+        {
+            StartCoroutine(TemporizadorVida());
+        }
     }
 
     private void Update()
@@ -38,6 +46,16 @@ public class ProyectilDevuelto : MonoBehaviour
         if (lanzado)
         {
             transform.Rotate(0f, 0f, velocidadGiro * Time.deltaTime);
+        }
+    }
+
+    private IEnumerator TemporizadorVida()
+    {
+        yield return new WaitForSeconds(tiempoVidaMaxima);
+
+        if (lanzado)
+        {
+            ImpactarYDestruir();
         }
     }
 
@@ -91,13 +109,11 @@ public class ProyectilDevuelto : MonoBehaviour
         {
             miVida.RecibirDano(1);
 
-            // Si el objeto sigue existiendo aquí, significa que sobrevivió al impacto:
             if (gameObject != null)
             {
                 rb.freezeRotation = true;
                 rb.angularVelocity = 0f;
 
-                // Buscamos cualquier MonoBehaviour que implemente la interfaz IParryable (la carpa, barracuda, etc.)
                 MonoBehaviour scriptIA = GetComponent<IParryable>() as MonoBehaviour;
                 if (scriptIA != null)
                 {
@@ -109,7 +125,6 @@ public class ProyectilDevuelto : MonoBehaviour
                 Destroy(this);
             }
 
-            //miVida.Morir();
         }
         else
         {

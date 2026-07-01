@@ -13,23 +13,16 @@ public class ColisionAtaqueBarracuda : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
-            StartCoroutine(AvisarImpacto(collision.gameObject));
-        }
-    }
+            if (barracudaPadre != null)
+            {
+                barracudaPadre.DetenerPorImpacto();
+            }
 
-    private System.Collections.IEnumerator AvisarImpacto(GameObject jugador)
-    {
-        yield return new WaitForSecondsRealtime(0.1f);
-
-        if (barracudaPadre != null)
-        {
-            barracudaPadre.DetenerPorImpacto();
-        }
-
-        SaludTiburon salud = jugador.GetComponent<SaludTiburon>();
-        if (salud != null)
-        {
-            salud.RecibirDano(1);
+            SaludTiburon salud = collision.GetComponent<SaludTiburon>();
+            if (salud != null)
+            {
+                salud.RecibirDano(1);
+            }
         }
     }
 }
