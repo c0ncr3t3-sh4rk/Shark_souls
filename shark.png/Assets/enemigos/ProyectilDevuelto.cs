@@ -84,6 +84,7 @@ public class ProyectilDevuelto : MonoBehaviour
     {
         if (!lanzado) return;
         if (collision.CompareTag("Player")) return;
+        if (collision.gameObject == gameObject) return;
 
         VidaEnemigo vidaOtroEnemigo = collision.GetComponent<VidaEnemigo>() ?? collision.GetComponentInParent<VidaEnemigo>();
         if (vidaOtroEnemigo != null)
@@ -114,12 +115,14 @@ public class ProyectilDevuelto : MonoBehaviour
                 rb.freezeRotation = true;
                 rb.angularVelocity = 0f;
 
-                MonoBehaviour scriptIA = GetComponent<IParryable>() as MonoBehaviour;
-                if (scriptIA != null)
+                MonoBehaviour scriptIAParry = GetComponent<IParryable>() as MonoBehaviour;
+                IEnemigo scriptIAStun = GetComponent<IEnemigo>();
+                if (scriptIAStun != null)
                 {
-                    scriptIA.enabled = true;
+                    scriptIAParry.enabled = true;
+                    scriptIAStun.SumarAturdimiento(3f);
 
-                    scriptIA.SendMessage("Start", SendMessageOptions.DontRequireReceiver);
+                    scriptIAParry.SendMessage("Start", SendMessageOptions.DontRequireReceiver);
                 }
 
                 Destroy(this);
