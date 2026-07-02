@@ -25,7 +25,6 @@ public class Barracuda : MonoBehaviour, IParryable, IEnemigo
     [SerializeField] private GameObject objAtaque;
     [SerializeField] private GameObject objParry;
 
-    // --- NUEVO SISTEMA DE ACUMULACIÓN DE ATURDIMIENTO ---
     [Header("Debug Aturdimiento")]
     [SerializeField] private float tiempoAturdimientoAcumulado = 0f;
 
