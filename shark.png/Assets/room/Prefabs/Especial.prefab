@@ -2781,6 +2781,8 @@ MonoBehaviour:
     visualBloqueo: {fileID: 9158777117717088503}
     estaConectado: 0
   posGrid: {x: 0, y: 0}
+  maquinaPrefab: {fileID: 231654207131675458, guid: 54e1e107e75f5724d867addd8018bcdc, type: 3}
+  puntoSpawnMaquina: {fileID: 0}
   salaCompletada: 0
   boundsCamara: {fileID: 227702547441469121}
   requiereSpawneo: 0
@@ -2853,7 +2855,7 @@ MonoBehaviour:
     peso: 0
     coste: 1
     maximoPorSala: 3
-  presupuestoBase: 1000
+  presupuestoBase: 10
   incrementoPresupuestoPorSala: 10
   presupuestoSimultaneoMaximo: 200
   umbralRefuerzos: 20

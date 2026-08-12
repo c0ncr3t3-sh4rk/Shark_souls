@@ -1,8 +1,9 @@
 using UnityEngine;
+using System.Collections;
 
-public class Barracuda : MonoBehaviour, IParryable
+public class Barracuda : MonoBehaviour, IParryable, IEnemigo
 {
-    private enum EstadoEnemigo { Patrullando, Persiguiendo, Atacando }
+    private enum EstadoEnemigo { Patrullando, Persiguiendo, Atacando, Aturdido }
     [SerializeField] private EstadoEnemigo estadoActual = EstadoEnemigo.Patrullando;
 
     [Header("Base")]
@@ -18,12 +19,15 @@ public class Barracuda : MonoBehaviour, IParryable
     [Header("Configuración Barracuda (Persecución y Ataque)")]
     [SerializeField] private float fuerzaPlacaje = 50f;
     [SerializeField] private float tiempoCargaAtaque = 1.5f;
-    [SerializeField] private float tiempoAturdimiento = 1.0f;
+    [SerializeField] public float tAturdimiento = 1.0f;
 
-    [Header("Referencias de Ataque")]
+    [Header("Referencias")]
     [SerializeField] private GameObject objAtaque;
+    [SerializeField] private GameObject objParry;
 
-    private float temporizadorAturdimiento = 0f;
+    [Header("Debug Aturdimiento")]
+    [SerializeField] private float tiempoAturdimientoAcumulado = 0f;
+
     private Vector2 direccion;
     private Transform jugador;
     private bool estaMoviendose = false;
@@ -33,10 +37,12 @@ public class Barracuda : MonoBehaviour, IParryable
     private bool yaHizoPlacaje = false;
     private Vector2 direccionAtaque;
     private Rigidbody2D rb;
+    private Coroutine crAturdimiento;
 
     private void Awake()
     {
         objAtaque.SetActive(false);
+        objParry.SetActive(false);
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
     }
@@ -53,6 +59,7 @@ public class Barracuda : MonoBehaviour, IParryable
     private void Update()
     {
         if (jugador == null) return;
+        if (estadoActual == EstadoEnemigo.Aturdido) return;
         if (estadoActual == EstadoEnemigo.Atacando) return;
 
         distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
@@ -87,6 +94,10 @@ public class Barracuda : MonoBehaviour, IParryable
 
             case EstadoEnemigo.Atacando:
                 Ataque();
+                break;
+
+            case EstadoEnemigo.Aturdido:
+                rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 6f);
                 break;
         }
     }
@@ -125,7 +136,7 @@ public class Barracuda : MonoBehaviour, IParryable
 
         if (estaMoviendose && rb.linearVelocity.magnitude > 0.1f)
         {
-            GirarSprite();
+            GirarSprite(rb.linearVelocity);
         }
     }
 
@@ -140,7 +151,7 @@ public class Barracuda : MonoBehaviour, IParryable
 
         if (rb.linearVelocity.magnitude > 0.1f)
         {
-            GirarSprite();
+            GirarSprite(rb.linearVelocity);
         }
     }
 
@@ -150,70 +161,80 @@ public class Barracuda : MonoBehaviour, IParryable
 
         temporizadorAtaque += Time.fixedDeltaTime;
 
-        // FASE 1: Carga del ataque (Apuntando)
         if (temporizadorAtaque < tiempoCargaAtaque)
         {
             rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 10f);
-            
             direccionAtaque = ((Vector2)jugador.position - (Vector2)transform.position).normalized;
-            
-            Vector2 velocidadOriginal = rb.linearVelocity;
-            rb.linearVelocity = direccionAtaque; 
-            GirarSprite();
-            rb.linearVelocity = velocidadOriginal;
-
+            GirarSprite(direccionAtaque);
             objAtaque.SetActive(false);
         }
-        // FASE 2: ¡Placaje gordo! (Inicio de la embestida)
         else if (!yaHizoPlacaje)
         {
-            yaHizoPlacaje = true;
-            temporizadorAturdimiento = 0f;
+            if (rb.linearVelocity.magnitude < 0.1f) 
+            {
+                rb.linearVelocity = direccionAtaque * fuerzaPlacaje;
+                GirarSprite(direccionAtaque);
+                objAtaque.SetActive(true);
+            }
             
-            rb.linearVelocity = direccionAtaque * fuerzaPlacaje;
-            
-            Vector2 velocidadOriginal = rb.linearVelocity;
-            rb.linearVelocity = direccionAtaque;
-            GirarSprite();
-            rb.linearVelocity = velocidadOriginal;
-
-            objAtaque.SetActive(true);
+            if (rb.linearVelocity.magnitude < 20f) 
+            {
+                Debug.Log("fin Ataque");
+                yaHizoPlacaje = true;
+            }
         }
         else
         {
-            temporizadorAturdimiento += Time.fixedDeltaTime;
-
-            rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 2f);
-
-            if (temporizadorAturdimiento >= tiempoAturdimiento)
-            {
-                if (objAtaque != null) objAtaque.SetActive(false);
-                estadoActual = EstadoEnemigo.Patrullando; 
-            }
+            Debug.Log("stun de 3 por ataque de la barracuda");
+            SumarAturdimiento(tAturdimiento);
         }
     }
 
-    public void DetenerPorImpacto()
+    public void SumarAturdimiento(float tiempoExtra)
     {
-        if (estadoActual == EstadoEnemigo.Atacando && yaHizoPlacaje)
+        rb.linearVelocity = Vector2.zero;
+        tiempoAturdimientoAcumulado += tiempoExtra;
+        objAtaque.SetActive(false);
+
+        if (crAturdimiento == null)
         {
-            rb.linearVelocity = Vector2.zero;
-            objAtaque.SetActive(false);
-
-            temporizadorAturdimiento = 0.5f; 
+            crAturdimiento = StartCoroutine(Aturdimiento());
         }
     }
 
-    private void GirarSprite()
+    private IEnumerator Aturdimiento()
     {
-        float anguloZ = Mathf.Atan2(rb.linearVelocity.y, rb.linearVelocity.x) * Mathf.Rad2Deg;
+        estadoActual = EstadoEnemigo.Aturdido;
+        if (objAtaque != null) objAtaque.SetActive(false);
+
+        while (tiempoAturdimientoAcumulado > 0f)
+        {
+            tiempoAturdimientoAcumulado -= Time.deltaTime;
+            yield return null;
+        }
+
+        tiempoAturdimientoAcumulado = 0f;
+
+        estadoActual = EstadoEnemigo.Patrullando;
+        crAturdimiento = null;
+    }
+
+    public void DetenerPorImpacto(float stun)
+    {
+        rb.linearVelocity = Vector2.zero;
+        SumarAturdimiento(stun); 
+    }
+
+    private void GirarSprite(Vector2 dir)
+    {
+        float anguloZ = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         anguloZ = Mathf.Round(anguloZ / 45f) * 45f;
 
         Vector3 escala = transform.localScale;
-        escala.x = (rb.linearVelocity.x < 0) ? -Mathf.Abs(escala.x) : Mathf.Abs(escala.x);
+        escala.x = (dir.x < 0) ? -Mathf.Abs(escala.x) : Mathf.Abs(escala.x);
         transform.localScale = escala;
 
-        if (rb.linearVelocity.x < 0) anguloZ += 180f;
+        if (dir.x < 0) anguloZ += 180f;
 
         transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
     }
@@ -221,9 +242,11 @@ public class Barracuda : MonoBehaviour, IParryable
     public void OnParry(GameObject parriedBy, int damage)
     {
         ColisionAtaqueBarracuda scriptHijo = objAtaque.GetComponent<ColisionAtaqueBarracuda>();
-        scriptHijo.StopAllCoroutines(); 
+        if (scriptHijo != null) scriptHijo.StopAllCoroutines(); 
 
         objAtaque.SetActive(false);
+        objParry.SetActive(true);
+
         StopAllCoroutines();
         this.enabled = false;
 

@@ -32,7 +32,7 @@ public class VidaEnemigo : MonoBehaviour
 
         if (Combo.Instancia != null)
             Combo.Instancia.Kill();
-        
+
         if (sangre != null)
         {
             GameObject objSangre = Instantiate(sangre, transform.position, Quaternion.identity);
@@ -45,6 +45,15 @@ public class VidaEnemigo : MonoBehaviour
         if (vidaActual <= 0)
         {
             Morir();
+        } else
+        {
+            IEnemigo enemigo = GetComponent<IEnemigo>();
+
+            if (enemigo != null)
+            {
+                Debug.Log("stun de 0.5 por ataque");
+                enemigo.SumarAturdimiento(0.5f);
+            }
         }
     }
 

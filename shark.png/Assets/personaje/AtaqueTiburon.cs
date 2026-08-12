@@ -61,4 +61,9 @@ public class AtaqueTiburon : MonoBehaviour
             }
         }
     }
+
+    public void addDamage(int nuevoDano)
+    {
+        danoMordisco += nuevoDano;
+    }
 }

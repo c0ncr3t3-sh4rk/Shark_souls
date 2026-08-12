@@ -23,6 +23,11 @@ public class MovimientoTiburon : MonoBehaviour
         rb.linearVelocity = inputMovimiento * velocidad;
     }
 
+    public void addVelocidad(float addVelocidad)
+    {
+        velocidad += addVelocidad;
+    }
+
     public Vector2 getImput()
     {
         return inputMovimiento;

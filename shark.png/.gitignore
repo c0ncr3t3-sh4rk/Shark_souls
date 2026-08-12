@@ -79,3 +79,7 @@ crashlytics-build.properties
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Executables e instaladores (no son assets de Unity)
+*.exe
+*.jar

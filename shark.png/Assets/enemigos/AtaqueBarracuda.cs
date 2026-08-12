@@ -15,13 +15,21 @@ public class ColisionAtaqueBarracuda : MonoBehaviour
         {
             if (barracudaPadre != null)
             {
-                barracudaPadre.DetenerPorImpacto();
+                barracudaPadre.DetenerPorImpacto(barracudaPadre.tAturdimiento / 2);
             }
 
             SaludTiburon salud = collision.GetComponent<SaludTiburon>();
             if (salud != null)
             {
                 salud.RecibirDano(1);
+            }
+        }
+        else if (collision.gameObject.layer == LayerMask.NameToLayer("Salas"))
+        {
+            if (barracudaPadre != null)
+            {
+                Debug.Log("¡La barracuda se ha estampado contra la pared!");
+                barracudaPadre.DetenerPorImpacto(barracudaPadre.tAturdimiento);
             }
         }
     }
