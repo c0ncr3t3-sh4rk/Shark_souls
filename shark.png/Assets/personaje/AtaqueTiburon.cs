@@ -151,4 +151,9 @@ public class AtaqueTiburon : MonoBehaviour
         pezAgarrado = null;
         pezAgarradoGO = null;
     }
+
+    public void addDamage(int nuevoDano)
+    {
+        danoMordisco += nuevoDano;
+    }
 }

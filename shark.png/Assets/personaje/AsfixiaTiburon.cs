@@ -39,6 +39,11 @@ public class AsfixiaTiburon : MonoBehaviour
         }
     }
 
+    public void addTiempoLimiteQuieto(float cantidad)
+    {
+        tiempoLimiteQuieto += cantidad;
+    }
+
     private IEnumerator Asfixia()
     {
         float espera = tiempoLimiteQuieto;

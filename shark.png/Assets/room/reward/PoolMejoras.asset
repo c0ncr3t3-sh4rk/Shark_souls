@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bf3664de74a79a48b43e83aee55aaa9, type: 3}
+  m_Name: PoolMejoras
+  m_EditorClassIdentifier: Assembly-CSharp::SharkSouls.Recompensas.PoolMejorasPorRareza
+  pools:
+  - rareza: 1
+    mejoras:
+    - id: VIDA_10
+      nombre: +10 Vida
+      descripcion: "Aumenta tu vida m\xE1xima en 10 puntos"
+      icono: {fileID: -3213050509267240529, guid: 1fa58f86cdbaf8c46be22851ae566d8f, type: 3}
+      rareza: 1
+      pesoAparicion: 1
+      tipo: 0

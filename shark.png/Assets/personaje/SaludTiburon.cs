@@ -149,4 +149,30 @@ public class SaludTiburon : MonoBehaviour
         Debug.Log("¡Game Over!");
         Destroy(gameObject); 
     }
+
+    public void addDuracionInvencibilidad(float cantidad)
+    {
+        duracionInvencibilidad += cantidad;
+    }
+
+    public void addHealth(int amount)
+    {
+        vidasActuales += amount;
+        if (vidasActuales > vidasMaximas) vidasActuales = vidasMaximas;
+        ActualizarCorazones();
+    }
+
+    public void addMaxHealth(int amount)
+    {
+        vidasMaximas += amount;
+        vidasActuales += amount;
+
+        for (int i = 0; i < amount; i++)
+        {
+            GameObject Corazon = Instantiate(corazonPrefab, contenedorCorazones);
+            listaCorazones.Add(Corazon);
+        }
+
+        ActualizarCorazones();
+    }
 }

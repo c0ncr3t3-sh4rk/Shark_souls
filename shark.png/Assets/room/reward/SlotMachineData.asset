@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf069423f3fb9af4ea1808465bb14388, type: 3}
+  m_Name: SlotMachineData
+  m_EditorClassIdentifier: Assembly-CSharp::SlotMachineData
+  pools:
+  - calidad: 0
+    probabilidadGlobal: 35
+    drops: []
+  - calidad: 1
+    probabilidadGlobal: 30
+    drops: []
+  - calidad: 2
+    probabilidadGlobal: 25
+    drops: []
+  - calidad: 3
+    probabilidadGlobal: 15
+    drops: []
+  - calidad: 4
+    probabilidadGlobal: 3
+    drops: []
+  - calidad: 5
+    probabilidadGlobal: 1
+    drops: []
+  - calidad: 6
+    probabilidadGlobal: 0.1
+    drops: []

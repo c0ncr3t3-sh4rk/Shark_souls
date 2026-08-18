@@ -64,6 +64,9 @@ namespace SharkSouls.Dungeon
         [Range(0f, 1f)]
         public float probabilidadBucle = 0.05f;
 
+        [Header("Recompensas")]
+        public GameObject prefabTragaperras;
+
         private Dictionary<Vector2Int, SalaBase> gridSalas = new Dictionary<Vector2Int, SalaBase>();
         private HashSet<Vector2Int> posicionesOcupadas = new HashSet<Vector2Int>();
         private Dictionary<Vector2Int, List<Vector2Int>> conexiones = new Dictionary<Vector2Int, List<Vector2Int>>();

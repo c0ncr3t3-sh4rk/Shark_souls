@@ -157,14 +157,20 @@ namespace SharkSouls.Dungeon
             if (spawnTerminado && enemigosVivos.Count == 0)
             {
                 salaCompletada = true;
-                
+
                 if (puertasCerradas)
                 {
                     AbrirPuertas();
                 }
 
                 if (Mazmorra != null)
+                {
+                    if (Mazmorra.prefabTragaperras != null)
+                    {
+                        Instantiate(Mazmorra.prefabTragaperras, transform.position, Quaternion.identity);
+                    }
                     Mazmorra.SalaCompletadaCallback();
+                }
             }
         }
 
