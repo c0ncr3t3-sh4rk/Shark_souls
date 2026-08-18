@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public class AtaqueTiburon : MonoBehaviour
@@ -20,12 +21,26 @@ public class AtaqueTiburon : MonoBehaviour
     [Header("Agarre")]
     [SerializeField] private Transform puntoBoca;
 
+    [Header("Bapuleo (Sacudida)")]
+    [SerializeField] private int girosParaBapuleo = 4;
+    [SerializeField] private float tiempoMaximoEntreGiros = 0.5f;
+    [SerializeField] private int danoBapuleo = 1;
+
+    [Header("Eventos de Bapuleo")]
+    public UnityEvent onGolpeBapuleo;
+    public UnityEvent onMuerteBapuleo;
+
     private SpriteRenderer spriteRenderer;
     public static bool estaOcupado = false;
 
     private IAgarrable pezAgarrado = null;
     private GameObject pezAgarradoGO = null;
     private PlayerInput input;
+
+    private MovimientoTiburon scriptMovimiento;
+    private int contadorGiros = 0;
+    private float ultimoTiempoGiro = 0f;
+    private int ultimoLadoInput = 0;
 
     public bool tienePezAgarrado => pezAgarrado != null;
 
@@ -35,6 +50,7 @@ public class AtaqueTiburon : MonoBehaviour
         spriteRenderer.sprite = spriteNormal;
         colliderBoca.enabled = false;
         input = GetComponent<PlayerInput>();
+        scriptMovimiento = GetComponent<MovimientoTiburon>();
     }
 
     public void OnAttack(InputValue value)
@@ -97,6 +113,68 @@ public class AtaqueTiburon : MonoBehaviour
             {
                 LimpiarAgarre();
                 CerrarBoca(EstadoBoca.Reposo); 
+                return;
+            }
+
+            ProcesarBapuleo();
+        }
+    }
+
+    private void ProcesarBapuleo()
+    {
+        if (scriptMovimiento == null) return;
+
+        Vector2 inputMov = scriptMovimiento.getImput();
+        int ladoActual = 0;
+
+        if (inputMov.x > 0.1f) ladoActual = 1;
+        else if (inputMov.x < -0.1f) ladoActual = -1;
+
+        if (ladoActual != 0 && ladoActual != ultimoLadoInput)
+        {
+            if (ultimoLadoInput != 0)
+            {
+                float tiempoPasado = Time.time - ultimoTiempoGiro;
+                if (tiempoPasado <= tiempoMaximoEntreGiros)
+                {
+                    contadorGiros++;
+                }
+                else
+                {
+                    contadorGiros = 1;
+                }
+
+                if (contadorGiros >= girosParaBapuleo)
+                {
+                    EjecutarGolpeBapuleo();
+                }
+            }
+            else
+            {
+                contadorGiros = 1;
+            }
+
+            ultimoLadoInput = ladoActual;
+            ultimoTiempoGiro = Time.time;
+        }
+    }
+
+    private void EjecutarGolpeBapuleo()
+    {
+        if (pezAgarradoGO == null) return;
+
+        VidaEnemigo enemigo = pezAgarradoGO.GetComponent<VidaEnemigo>() ?? pezAgarradoGO.GetComponentInParent<VidaEnemigo>();
+
+        if (enemigo != null)
+        {
+            enemigo.RecibirDano(danoBapuleo);
+            onGolpeBapuleo?.Invoke();
+
+            if (pezAgarradoGO == null || !pezAgarradoGO.activeInHierarchy)
+            {
+                onMuerteBapuleo?.Invoke();
+                LimpiarAgarre();
+                CerrarBoca(EstadoBoca.Reposo);
             }
         }
     }
@@ -152,6 +230,9 @@ public class AtaqueTiburon : MonoBehaviour
     {
         pezAgarrado = null;
         pezAgarradoGO = null;
+        contadorGiros = 0;
+        ultimoLadoInput = 0;
+        ultimoTiempoGiro = 0f;
     }
 
     public GameObject SoltarPezParaParry()
