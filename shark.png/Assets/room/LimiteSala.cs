@@ -18,7 +18,10 @@ namespace SharkSouls.Dungeon
 
             if (((1 << collision.gameObject.layer) & layerMaskEnemigos) == 0) return;
 
-            VidaEnemigo vida = collision.GetComponent<VidaEnemigo>();
+            IAgarrable agarrable = collision.GetComponent<IAgarrable>() ?? collision.GetComponentInParent<IAgarrable>();
+            if (agarrable != null && agarrable.EstaAgarrado) return;
+
+            VidaEnemigo vida = collision.GetComponent<VidaEnemigo>() ?? collision.GetComponentInParent<VidaEnemigo>();
             if (vida != null)
                 vida.Morir();
             else

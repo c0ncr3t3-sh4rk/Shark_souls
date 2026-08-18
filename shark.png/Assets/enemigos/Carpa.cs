@@ -26,6 +26,7 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
 
     // Referencia para seguir la boca sin cambiar de padre
     private Transform puntoBocaActual = null;
+    public bool EstaAgarrado => puntoBocaActual != null;
 
     private void Awake()
     {
@@ -45,6 +46,7 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
 
     private void Update()
     {
+        if (puntoBocaActual != null) return;
         if (jugador == null) return;
 
         distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);

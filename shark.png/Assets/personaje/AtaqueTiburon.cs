@@ -105,18 +105,20 @@ public class AtaqueTiburon : MonoBehaviour
     {
         if (estadoActual != EstadoBoca.Abierta) return;
 
-        if (collision.gameObject.CompareTag("Enemigo"))
+        if (collision.gameObject.CompareTag("Enemigo") || collision.attachedRigidbody?.CompareTag("Enemigo") == true)
         {
-            IAgarrable agarrable = collision.GetComponent<IAgarrable>();
-            VidaEnemigo enemigo = collision.GetComponent<VidaEnemigo>();
+            IAgarrable agarrable = collision.GetComponent<IAgarrable>() ?? collision.GetComponentInParent<IAgarrable>();
+            VidaEnemigo enemigo = collision.GetComponent<VidaEnemigo>() ?? collision.GetComponentInParent<VidaEnemigo>();
 
             if (enemigo != null)
             {
                 enemigo.RecibirDano(danoMordisco);
 
-                if (agarrable != null && collision.gameObject.activeInHierarchy)
+                GameObject objetivoGO = (agarrable as MonoBehaviour)?.gameObject ?? collision.gameObject;
+
+                if (agarrable != null && objetivoGO.activeInHierarchy)
                 {
-                    AgarrarPez(agarrable, collision.gameObject);
+                    AgarrarPez(agarrable, objetivoGO);
                     estadoActual = EstadoBoca.Presa;
                     colliderBoca.enabled = false;
                 }
