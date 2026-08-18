@@ -45,12 +45,16 @@ public class Combo : MonoBehaviour
             listaDientes[i].enabled = (i < cuadradosVisibles && comboActual > 0);
         }
 
+        // Perder el combo si pasa el tiempo
         if (comboActual > 0 && Time.time - tiempoUltimaBaja > tiempoParaPerderCombo)
         {
             comboActual = 0;
             texto.text = "";
+            texto.color = Color.white;
+            transform.localPosition = posOriginal;
         }
 
+        // Temblores según el nivel de combo
         if (comboActual >= 100)
         {
             transform.localPosition = posOriginal + (Vector3)Random.insideUnitCircle * 10f;
@@ -67,7 +71,12 @@ public class Combo : MonoBehaviour
         {
             transform.localPosition = posOriginal + (Vector3)Random.insideUnitCircle * 1f;
         }
+        else
+        {
+            transform.localPosition = posOriginal; // Regresa a la posición normal
+        }
 
+        // Efecto visual dinámico al superar 100 de combo
         if (comboActual >= 100)
         {
             float hue = Mathf.PingPong(Time.time * 2f, 1f); 
@@ -81,6 +90,9 @@ public class Combo : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Suma una baja al contador y reinicia el temporizador de combo.
+    /// </summary>
     public void Kill()
     {
         comboActual++;
@@ -98,6 +110,14 @@ public class Combo : MonoBehaviour
 
         StopAllCoroutines();
         StartCoroutine(EfectoPulso());
+    }
+
+    /// <summary>
+    /// Rellena el temporizador de combo al máximo sin modificar el contador actual.
+    /// </summary>
+    public void Hit()
+    {
+        tiempoUltimaBaja = Time.time;
     }
 
     private IEnumerator EfectoPulso()

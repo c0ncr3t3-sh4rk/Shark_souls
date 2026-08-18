@@ -206,7 +206,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e78be2cbac0248146a458db6abc0c3ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VidaEnemigo
-  vidaMaxima: 5
+  vidaMaxima: 1
   sangre: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
   sangreMuerte: {fileID: 0}
   salaAsignada: {fileID: 0}
@@ -272,9 +272,10 @@ MonoBehaviour:
   rangoAtaque: 7
   fuerzaPlacaje: 30
   tiempoCargaAtaque: 1.5
-  tiempoAturdimiento: 1
+  tAturdimiento: 1
   objAtaque: {fileID: 6028215247626731932}
   objParry: {fileID: 3102399705568791929}
+  tiempoAturdimientoAcumulado: 0
 --- !u!114 &8262833928695884874
 MonoBehaviour:
   m_ObjectHideFlags: 0

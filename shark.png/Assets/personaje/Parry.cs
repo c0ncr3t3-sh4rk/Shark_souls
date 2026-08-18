@@ -81,7 +81,7 @@ public class Parry : MonoBehaviour
                 parryable.OnParry(gameObject, danoDeAtaque);
             }
 
-            Combo.Instancia.Kill();
+            Combo.Instancia.Hit();
             estaHaciendoParry = false;
 
             return true;

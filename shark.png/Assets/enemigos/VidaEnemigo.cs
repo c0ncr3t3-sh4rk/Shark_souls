@@ -31,7 +31,7 @@ public class VidaEnemigo : MonoBehaviour
         vidaActual -= cantidad;
 
         if (Combo.Instancia != null)
-            Combo.Instancia.Kill();
+            Combo.Instancia.Hit();
 
         if (sangre != null)
         {
