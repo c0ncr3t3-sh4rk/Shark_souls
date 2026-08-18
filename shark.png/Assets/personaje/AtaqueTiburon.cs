@@ -4,61 +4,151 @@ using UnityEngine.InputSystem;
 
 public class AtaqueTiburon : MonoBehaviour
 {
+    public enum EstadoBoca { Reposo, Abierta, Bloqueada, Presa }
+
+    [Header("Estado (Solo lectura)")]
+    public EstadoBoca estadoActual = EstadoBoca.Reposo;
+
     [Header("Sprites")]
-    [SerializeField] private Sprite spriteNormal; 
-    [SerializeField] private Sprite spriteMordisco; 
-    [SerializeField] private float duracionMordisco = 0.15f; 
+    [SerializeField] private Sprite spriteNormal;
+    [SerializeField] private Sprite spriteMordisco;
 
     [Header("Daño")]
     [SerializeField] private int danoMordisco = 1;
     [SerializeField] private Collider2D colliderBoca;
 
-    private SpriteRenderer spriteRenderer; 
+    [Header("Agarre")]
+    [SerializeField] private Transform puntoBoca;
+
+    private SpriteRenderer spriteRenderer;
     public static bool estaOcupado = false;
+
+    private IAgarrable pezAgarrado = null;
+    private GameObject pezAgarradoGO = null;
+    private PlayerInput input;
+
+    public bool tienePezAgarrado => pezAgarrado != null;
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = spriteNormal;
-        
         colliderBoca.enabled = false;
+        input = GetComponent<PlayerInput>();
     }
 
     public void OnAttack(InputValue value)
     {
-        if (value.isPressed && !estaOcupado)
+        bool presionado = value.isPressed;
+
+        if (presionado)
         {
-            StartCoroutine(Mordisco());
+            if (estadoActual == EstadoBoca.Reposo)
+            {
+                AbrirBoca();
+            }
+        }
+        else
+        {
+            // Lógica unificada para soltar el botón
+            switch (estadoActual)
+            {
+                case EstadoBoca.Abierta:
+                    CerrarBoca(EstadoBoca.Reposo);
+                    break;
+                case EstadoBoca.Presa:
+                    SoltarPez();
+                    CerrarBoca(EstadoBoca.Reposo);
+                    break;
+                case EstadoBoca.Bloqueada:
+                    estadoActual = EstadoBoca.Reposo;
+                    estaOcupado = false;
+                    break;
+            }
         }
     }
 
-    private IEnumerator Mordisco()
+    private void AbrirBoca()
     {
+        estadoActual = EstadoBoca.Abierta;
         estaOcupado = true;
         spriteRenderer.sprite = spriteMordisco;
         colliderBoca.enabled = true;
+    }
 
-        yield return new WaitForSeconds(duracionMordisco);
-
-        colliderBoca.enabled = false;
+    private void CerrarBoca(EstadoBoca nuevoEstado)
+    {
+        estadoActual = nuevoEstado;
         spriteRenderer.sprite = spriteNormal;
-        estaOcupado = false;
+        colliderBoca.enabled = false;
+
+        if (nuevoEstado == EstadoBoca.Reposo)
+        {
+            estaOcupado = false;
+        }
+    }
+
+    private void Update()
+    {
+        if (estadoActual == EstadoBoca.Presa)
+        {
+            // Si el objeto desaparece, forzamos el cierre y liberamos el estado
+            if (pezAgarradoGO == null || !pezAgarradoGO.activeInHierarchy)
+            {
+                LimpiarAgarre();
+                CerrarBoca(EstadoBoca.Reposo); 
+            }
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!colliderBoca.enabled) return;
+        if (estadoActual != EstadoBoca.Abierta) return;
 
-        if (collision.gameObject.CompareTag("Enemigo") && collision.IsTouching(colliderBoca))
+        if (collision.gameObject.CompareTag("Enemigo"))
         {
+            IAgarrable agarrable = collision.GetComponent<IAgarrable>();
             VidaEnemigo enemigo = collision.GetComponent<VidaEnemigo>();
+
             if (enemigo != null)
             {
-                Debug.Log("¡Atacaste con la boca con éxito!");
                 enemigo.RecibirDano(danoMordisco);
 
-                colliderBoca.enabled = false;
+                if (agarrable != null && collision.gameObject.activeInHierarchy)
+                {
+                    AgarrarPez(agarrable, collision.gameObject);
+                    estadoActual = EstadoBoca.Presa;
+                    colliderBoca.enabled = false;
+                }
+                else
+                {
+                    CerrarBoca(EstadoBoca.Bloqueada);
+                }
             }
         }
+        estaOcupado = false;
+    }
+
+    private void AgarrarPez(IAgarrable agarrable, GameObject go)
+    {
+        pezAgarrado = agarrable;
+        pezAgarradoGO = go;
+        Transform parentTransform = puntoBoca != null ? puntoBoca : transform;
+        pezAgarrado.EnAgarrar(parentTransform);
+    }
+
+    public void SoltarPez()
+    {
+        if (pezAgarrado != null)
+        {
+            pezAgarrado.EnSoltar();
+            LimpiarAgarre();
+        }
+    }
+
+    private void LimpiarAgarre()
+    {
+        pezAgarrado = null;
+        pezAgarradoGO = null;
     }
 }
