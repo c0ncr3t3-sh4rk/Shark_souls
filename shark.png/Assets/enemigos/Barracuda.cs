@@ -192,6 +192,8 @@ public class Barracuda : MonoBehaviour, IParryable, IEnemigo
 
     public void SumarAturdimiento(float tiempoExtra)
     {
+        if (!gameObject.activeInHierarchy) return;
+
         rb.linearVelocity = Vector2.zero;
         tiempoAturdimientoAcumulado += tiempoExtra;
         objAtaque.SetActive(false);

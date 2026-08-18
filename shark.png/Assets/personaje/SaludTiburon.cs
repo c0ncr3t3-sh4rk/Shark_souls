@@ -167,6 +167,8 @@ public class SaludTiburon : MonoBehaviour
         vidasMaximas += amount;
         vidasActuales += amount;
 
+        if (vidasActuales <= 0) vidasActuales = 1;
+
         for (int i = 0; i < amount; i++)
         {
             GameObject Corazon = Instantiate(corazonPrefab, contenedorCorazones);

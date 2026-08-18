@@ -26,6 +26,7 @@ public class MovimientoTiburon : MonoBehaviour
     public void addVelocidad(float addVelocidad)
     {
         velocidad += addVelocidad;
+        if (velocidad == 0) velocidad = 0.1f;
     }
 
     public Vector2 getImput()

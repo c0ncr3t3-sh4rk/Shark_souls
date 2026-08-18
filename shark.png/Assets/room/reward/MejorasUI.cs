@@ -7,7 +7,7 @@ public class MejorasUI : MonoBehaviour
     private const int   CARD_W      = 300;
     private const int   CARD_H      = 100;
     private const int   BORDER_SIZE = 5;   // grosor del contorno en píxeles
-    private const int   SPACING     = 150;
+    private const int   SPACING     = 120; // reducido un poco para que quepan hasta 6 opciones
 
     private GameObject canvasGO;
 
@@ -45,7 +45,9 @@ public class MejorasUI : MonoBehaviour
                 ? borderColors[i]
                 : Color.white;
 
-            Vector2 centerPos = new Vector2(0, 150 - (i * SPACING));
+            float totalHeight = (descripciones.Length - 1) * SPACING;
+            float startY = totalHeight / 2f;
+            Vector2 centerPos = new Vector2(0, startY - (i * SPACING));
 
             // --- Contorno (se dibuja primero, detrás de la tarjeta) ---
             GameObject borderGO = new GameObject($"Border_{i}");
