@@ -24,15 +24,19 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
     private Rigidbody2D rb;
     private Collider2D[] misColliders;
 
-    // Referencia para seguir la boca sin cambiar de padre
     private Transform puntoBocaActual = null;
     public bool EstaAgarrado => puntoBocaActual != null;
+
+    private Vector3 escalaOriginal;
+    private AnimacionEnemigo animEnemigo;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
         misColliders = GetComponentsInChildren<Collider2D>();
+        escalaOriginal = transform.localScale;
+        animEnemigo = GetComponent<AnimacionEnemigo>();
     }
 
     private void Start()
@@ -88,11 +92,10 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
 
     private void LateUpdate()
     {
-        // Si está agarrada por el tiburón, sigue la posición y rotación de la boca en tiempo real
+        // Mantener vertical mientras está en la boca del tiburón
         if (puntoBocaActual != null)
         {
-            transform.position = puntoBocaActual.position;
-            transform.rotation = puntoBocaActual.rotation;
+            transform.rotation = Quaternion.identity;
         }
     }
 
@@ -161,12 +164,18 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
     public void OnParry(GameObject parriedBy, int damage)
     {
         puntoBocaActual = null;
+
+        transform.SetParent(null);
+        transform.localScale = escalaOriginal;
+
         rb.bodyType = RigidbodyType2D.Dynamic;
 
         foreach (var col in misColliders)
         {
             if (col != null) col.enabled = true;
         }
+
+        if (animEnemigo != null) animEnemigo.enabled = true;
 
         StopAllCoroutines();
         this.enabled = false;
@@ -177,14 +186,14 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
     }
 
     // ==========================================
-    // SISTEMA DE AGARRE (MANTENIENDO PADRE ORIGINAL)
+    // SISTEMA DE AGARRE
     // ==========================================
 
     public void EnAgarrar(Transform boca)
     {
         puntoBocaActual = boca;
+        escalaOriginal = transform.localScale;
 
-        // Desactivamos físicas pero NO cambiamos de padre (SetParent)
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
         rb.bodyType = RigidbodyType2D.Kinematic;
@@ -193,17 +202,40 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
         {
             if (col != null) col.enabled = false;
         }
+
+        if (animEnemigo != null) animEnemigo.enabled = false;
+
+        // Guardar escala del mundo antes de cambiar padre
+        Vector3 escalaWorld = transform.lossyScale;
+
+        transform.SetParent(boca);
+        transform.localPosition = Vector3.right * -0.7f; 
+        transform.localRotation = Quaternion.Euler(0, 0, 180);   
+
+        // Ajustar escala local para mantener el tamaño visual correcto
+        Vector3 lossyBoca = boca.lossyScale;
+        transform.localScale = new Vector3(
+            Mathf.Abs(escalaWorld.x) / Mathf.Abs(lossyBoca.x),
+            Mathf.Abs(escalaWorld.y) / Mathf.Abs(lossyBoca.y),
+            Mathf.Abs(escalaWorld.z) / Mathf.Abs(lossyBoca.z)
+        );
     }
 
     public void EnSoltar()
     {
         puntoBocaActual = null;
+
+        transform.SetParent(null);
+        transform.localScale = escalaOriginal;
+
         rb.bodyType = RigidbodyType2D.Dynamic;
 
         foreach (var col in misColliders)
         {
             if (col != null) col.enabled = true;
         }
+
+        if (animEnemigo != null) animEnemigo.enabled = true;
 
         this.enabled = true;
         estadoActual = EstadoEnemigo.Patrullando;
@@ -213,6 +245,11 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
 
     private void OnDisable()
     {
+        if (puntoBocaActual != null)
+        {
+            transform.SetParent(null);
+            transform.localScale = escalaOriginal;
+        }
         puntoBocaActual = null;
 
         if (rb != null)
@@ -227,6 +264,8 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
                 if (col != null) col.enabled = true;
             }
         }
+
+        if (animEnemigo != null) animEnemigo.enabled = true;
     }
 
     private void OnDrawGizmosSelected()

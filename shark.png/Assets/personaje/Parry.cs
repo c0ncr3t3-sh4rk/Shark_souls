@@ -34,7 +34,34 @@ public class Parry : MonoBehaviour
 
     public void OnAttackSec(InputValue value)
     {
-        if (value.isPressed && !AtaqueTiburon.estaOcupado)
+        if (!value.isPressed) return;
+
+        // Si tenemos un pez en la boca, hacer parry sobre él
+        AtaqueTiburon ataque = GetComponent<AtaqueTiburon>();
+        if (ataque != null && ataque.tienePezAgarrado)
+        {
+            GameObject pez = ataque.SoltarPezParaParry();
+            if (pez != null)
+            {
+                IParryable parryable = pez.GetComponent<IParryable>();
+                if (parryable != null)
+                {
+                    //StartCoroutine(IntentarParry());
+                    audioSource.PlayOneShot(sonidoParry);
+                    if (efectoPantalla != null)
+                        StartCoroutine(EfectoPantalla());
+                    Iframes();
+                    if (Combo.Instancia != null)
+                        Combo.Instancia.Hit();
+
+                    parryable.OnParry(gameObject, 0);
+                }
+            }
+            return;
+        }
+
+        // Parry normal
+        if (!AtaqueTiburon.estaOcupado)
         {
             StartCoroutine(IntentarParry());
         }
@@ -92,6 +119,7 @@ public class Parry : MonoBehaviour
 
     private IEnumerator EfectoPantalla()
     {
+        spriteRenderer.sprite = spriteParry;
         Animacion animacion = GetComponent<Animacion>();
         animacion.enabled = false;
         efectoPantalla.SetActive(true);

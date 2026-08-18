@@ -154,6 +154,17 @@ public class AtaqueTiburon : MonoBehaviour
         pezAgarradoGO = null;
     }
 
+    public GameObject SoltarPezParaParry()
+    {
+        if (pezAgarrado == null) return null;
+
+        GameObject go = pezAgarradoGO;
+        pezAgarrado.EnSoltar();
+        LimpiarAgarre();
+        CerrarBoca(EstadoBoca.Reposo);
+        return go;
+    }
+
     public void addDamage(int nuevoDano)
     {
         danoMordisco += nuevoDano;
