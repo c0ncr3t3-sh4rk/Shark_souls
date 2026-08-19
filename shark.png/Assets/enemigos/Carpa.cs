@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Carpa : MonoBehaviour, IParryable, IAgarrable
+public class Carpa : MonoBehaviour, IParryable
 {
     private enum EstadoEnemigo { Patrullando, Persiguiendo, Atacando }
     [SerializeField] private EstadoEnemigo estadoActual = EstadoEnemigo.Patrullando;
@@ -23,12 +23,11 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
 
     private Rigidbody2D rb;
     private Collider2D[] misColliders;
-
-    private Transform puntoBocaActual = null;
-    public bool EstaAgarrado => puntoBocaActual != null;
-
     private Vector3 escalaOriginal;
     private AnimacionEnemigo animEnemigo;
+
+    // Referencia al componente externo
+    private Agarrable agarrable;
 
     private void Awake()
     {
@@ -37,6 +36,8 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
         misColliders = GetComponentsInChildren<Collider2D>();
         escalaOriginal = transform.localScale;
         animEnemigo = GetComponent<AnimacionEnemigo>();
+
+        agarrable = GetComponent<Agarrable>();
     }
 
     private void Start()
@@ -50,7 +51,8 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
 
     private void Update()
     {
-        if (puntoBocaActual != null) return;
+        // Si está agarrada por el tiburón, frena la IA
+        if (agarrable != null && agarrable.EstaAgarrado) return;
         if (jugador == null) return;
 
         distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
@@ -71,8 +73,8 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
 
     private void FixedUpdate()
     {
-        // Si está agarrada, no ejecutamos la lógica de movimiento/patrulla
-        if (puntoBocaActual != null) return;
+        // Si está agarrada por el tiburón, frena la IA
+        if (agarrable != null && agarrable.EstaAgarrado) return;
 
         switch (estadoActual)
         {
@@ -87,15 +89,6 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
             case EstadoEnemigo.Atacando:
                 Patrulla();
                 break;
-        }
-    }
-
-    private void LateUpdate()
-    {
-        // Mantener vertical mientras está en la boca del tiburón
-        if (puntoBocaActual != null)
-        {
-            transform.rotation = Quaternion.identity;
         }
     }
 
@@ -163,8 +156,6 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
 
     public void OnParry(GameObject parriedBy, int damage)
     {
-        puntoBocaActual = null;
-
         transform.SetParent(null);
         transform.localScale = escalaOriginal;
 
@@ -183,89 +174,6 @@ public class Carpa : MonoBehaviour, IParryable, IAgarrable
         ProyectilDevuelto proyectil = gameObject.GetComponent<ProyectilDevuelto>() 
                                    ?? gameObject.AddComponent<ProyectilDevuelto>();
         proyectil.Disparar(50f, damage + 5);
-    }
-
-    // ==========================================
-    // SISTEMA DE AGARRE
-    // ==========================================
-
-    public void EnAgarrar(Transform boca)
-    {
-        puntoBocaActual = boca;
-        escalaOriginal = transform.localScale;
-
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0f;
-        rb.bodyType = RigidbodyType2D.Kinematic;
-
-        foreach (var col in misColliders)
-        {
-            if (col != null) col.enabled = false;
-        }
-
-        if (animEnemigo != null) animEnemigo.enabled = false;
-
-        // Guardar escala del mundo antes de cambiar padre
-        Vector3 escalaWorld = transform.lossyScale;
-
-        transform.SetParent(boca);
-        transform.localPosition = Vector3.right * -0.7f; 
-        transform.localRotation = Quaternion.Euler(0, 0, 180);   
-
-        // Ajustar escala local para mantener el tamaño visual correcto
-        Vector3 lossyBoca = boca.lossyScale;
-        transform.localScale = new Vector3(
-            Mathf.Abs(escalaWorld.x) / Mathf.Abs(lossyBoca.x),
-            Mathf.Abs(escalaWorld.y) / Mathf.Abs(lossyBoca.y),
-            Mathf.Abs(escalaWorld.z) / Mathf.Abs(lossyBoca.z)
-        );
-    }
-
-    public void EnSoltar()
-    {
-        puntoBocaActual = null;
-
-        transform.SetParent(null);
-        transform.localScale = escalaOriginal;
-
-        rb.bodyType = RigidbodyType2D.Dynamic;
-
-        foreach (var col in misColliders)
-        {
-            if (col != null) col.enabled = true;
-        }
-
-        if (animEnemigo != null) animEnemigo.enabled = true;
-
-        this.enabled = true;
-        estadoActual = EstadoEnemigo.Patrullando;
-        tiempoEnEstado = 0f;
-        estaMoviendose = false;
-    }
-
-    private void OnDisable()
-    {
-        if (puntoBocaActual != null)
-        {
-            transform.SetParent(null);
-            transform.localScale = escalaOriginal;
-        }
-        puntoBocaActual = null;
-
-        if (rb != null)
-        {
-            rb.bodyType = RigidbodyType2D.Dynamic;
-        }
-
-        if (misColliders != null)
-        {
-            foreach (var col in misColliders)
-            {
-                if (col != null) col.enabled = true;
-            }
-        }
-
-        if (animEnemigo != null) animEnemigo.enabled = true;
     }
 
     private void OnDrawGizmosSelected()

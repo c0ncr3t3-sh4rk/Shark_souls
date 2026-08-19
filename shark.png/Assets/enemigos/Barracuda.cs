@@ -39,8 +39,11 @@ public class Barracuda : MonoBehaviour, IParryable, IEnemigo
     private Rigidbody2D rb;
     private Coroutine crAturdimiento;
 
+    private Agarrable agarrable;
+
     private void Awake()
     {
+        agarrable = GetComponent<Agarrable>();
         objAtaque.SetActive(false);
         objParry.SetActive(false);
         rb = GetComponent<Rigidbody2D>();
@@ -58,6 +61,7 @@ public class Barracuda : MonoBehaviour, IParryable, IEnemigo
 
     private void Update()
     {
+        if (agarrable != null && agarrable.EstaAgarrado) return;
         if (jugador == null) return;
         if (estadoActual == EstadoEnemigo.Aturdido) return;
         if (estadoActual == EstadoEnemigo.Atacando) return;

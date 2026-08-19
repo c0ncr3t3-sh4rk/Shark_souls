@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 9126204535370768903}
   - component: {fileID: 1712660102632328487}
   - component: {fileID: 5069106965307789947}
+  - component: {fileID: -4277664588977006702}
   m_Layer: 8
   m_Name: Carpa_0
   m_TagString: Enemigo
@@ -114,6 +115,8 @@ MonoBehaviour:
   sangre: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
   sangreMuerte: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
   salaAsignada: {fileID: 0}
+  costePresupuesto: 0
+  prefabOrigen: {fileID: 0}
 --- !u!114 &7179978974296880339
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251,6 +254,18 @@ MonoBehaviour:
   anguloMeneito: 6
   velocidadIdle: 3
   anguloIdle: 2.5
+--- !u!114 &-4277664588977006702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4897203831263170463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2588802275f56be489167986e448ccff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Agarrable
 --- !u!1 &5218726950033146845
 GameObject:
   m_ObjectHideFlags: 0
