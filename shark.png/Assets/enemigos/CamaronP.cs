@@ -1,9 +1,8 @@
 using UnityEngine;
-using System.Collections;
 
-public class Carpa : MonoBehaviour, IParryable, IEnemigo
+public class CamaronP : MonoBehaviour, IParryable
 {
-    private enum EstadoEnemigo { Patrullando, Persiguiendo, Atacando, Aturdido }
+    private enum EstadoEnemigo { Patrullando, Atacando, Huyendo }
     [SerializeField] private EstadoEnemigo estadoActual = EstadoEnemigo.Patrullando;
 
     [Header("Base")]
@@ -13,8 +12,8 @@ public class Carpa : MonoBehaviour, IParryable, IEnemigo
 
     [Header("Distancias")]
     [SerializeField] private float distanciaAlJugador; 
-    [SerializeField] private float rangoAlerta = 5f;
-    [SerializeField] private float rangoAtaque = 1.5f;
+    [SerializeField] private float rangoAtaque = 5f;
+    [SerializeField] private float rangoHuida = 1.5f;
 
     private Vector2 direccion;
     private Transform jugador;
@@ -30,9 +29,11 @@ public class Carpa : MonoBehaviour, IParryable, IEnemigo
     // Referencia al componente externo
     private Agarrable agarrable;
 
-    [Header("Aturdimiento")]
-    [SerializeField] private float tiempoAturdimientoAcumulado = 0f;
-    private Coroutine crAturdimiento;
+    [Header("Ajustes de Huida / Dash")]
+    [SerializeField] private float fuerzaDash = 8f;        // Qué tan fuerte sale disparado
+    [SerializeField] private float cdDash = 0.5f;          // Tiempo entre dashes (medio segundo)
+    [SerializeField] private float amortiguacionHuida = 5f; // Frenado paulatino tras cada dash
+    private float tiempoSiguienteDash = 0f;
 
     private void Awake()
     {
@@ -58,18 +59,17 @@ public class Carpa : MonoBehaviour, IParryable, IEnemigo
     {
         // Si está agarrada por el tiburón, frena la IA
         if (agarrable != null && agarrable.EstaAgarrado) return;
-        if (estadoActual == EstadoEnemigo.Aturdido) return;
         if (jugador == null) return;
 
         distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
 
-        if (distanciaAlJugador <= rangoAtaque)
+        if (distanciaAlJugador <= rangoHuida)
+        {
+            estadoActual = EstadoEnemigo.Huyendo;
+        }
+        else if (distanciaAlJugador <= rangoAtaque)
         {
             estadoActual = EstadoEnemigo.Atacando;
-        }
-        else if (distanciaAlJugador <= rangoAlerta)
-        {
-            estadoActual = EstadoEnemigo.Persiguiendo;
         }
         else
         {
@@ -88,12 +88,12 @@ public class Carpa : MonoBehaviour, IParryable, IEnemigo
                 Patrulla();
                 break;
 
-            case EstadoEnemigo.Persiguiendo:
-                Patrulla();
+            case EstadoEnemigo.Atacando:
+                Ataque();
                 break;
 
-            case EstadoEnemigo.Atacando:
-                Patrulla();
+            case EstadoEnemigo.Huyendo:
+                Huida();
                 break;
         }
     }
@@ -136,14 +136,47 @@ public class Carpa : MonoBehaviour, IParryable, IEnemigo
         }
     }
 
-    private void Persecucion()
+    private void Ataque()
     {
         
     }
 
-    private void Ataque()
+    private void Huida()
     {
-        
+        // Si ya pasó el tiempo de espera, ejecutamos el mini dash
+        if (Time.time >= tiempoSiguienteDash)
+        {
+            EjecutarDashDiagonal();
+            tiempoSiguienteDash = Time.time + cdDash;
+        }
+
+        // Aplicamos una fricción gradual para que el camarón desacelere entre dashes
+        rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * amortiguacionHuida);
+
+        // Girar hacia la dirección del movimiento actual
+        if (rb.linearVelocity.magnitude > 0.1f)
+        {
+            GirarSprite();
+        }
+    }
+
+    private void EjecutarDashDiagonal()
+    {
+        // 1. Calcular la dirección opuesta al jugador (dirección pura de huida)
+        Vector2 dirHuida = (transform.position - jugador.position).normalized;
+
+        // 2. Elegir aleatoriamente hacia la izquierda (90°) o derecha (-90°) respecto a la huida
+        float signoDiagonal = Random.value > 0.5f ? 1f : -1f;
+
+        // 3. Crear el componente perpendicular
+        Vector2 dirPerpendicular = new Vector2(-dirHuida.y, dirHuida.x) * signoDiagonal;
+
+        // 4. Mezclar la huida con la perpendicular para obtener una diagonal (50% lejos, 50% lado)
+        Vector2 dirDiagonalFinal = (dirHuida + dirPerpendicular).normalized;
+
+        // 5. Limpiar velocidad anterior para un impulso limpio y aplicar el dash
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(dirDiagonalFinal * fuerzaDash, ForceMode2D.Impulse);
     }
 
     private void GirarSprite()
@@ -182,41 +215,12 @@ public class Carpa : MonoBehaviour, IParryable, IEnemigo
         proyectil.Disparar(50f, damage + 5);
     }
 
-    public void SumarAturdimiento(float tiempoExtra)
-    {
-        if (!gameObject.activeInHierarchy) return;
-
-        rb.linearVelocity = Vector2.zero;
-        tiempoAturdimientoAcumulado += tiempoExtra;
-
-        if (crAturdimiento == null)
-        {
-            crAturdimiento = StartCoroutine(Aturdimiento());
-        }
-    }
-
-    private IEnumerator Aturdimiento()
-    {
-        estadoActual = EstadoEnemigo.Aturdido;
-
-        while (tiempoAturdimientoAcumulado > 0f)
-        {
-            tiempoAturdimientoAcumulado -= Time.deltaTime;
-            yield return null;
-        }
-
-        tiempoAturdimientoAcumulado = 0f;
-
-        estadoActual = EstadoEnemigo.Patrullando;
-        crAturdimiento = null;
-    }
-
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, rangoAlerta);
+        Gizmos.DrawWireSphere(transform.position, rangoAtaque);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, rangoAtaque);
+        Gizmos.DrawWireSphere(transform.position, rangoHuida);
     }
 }
