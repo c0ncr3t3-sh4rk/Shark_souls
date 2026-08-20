@@ -66,7 +66,6 @@ public class AtaqueTiburon : MonoBehaviour
         }
         else
         {
-            // Lógica unificada para soltar el botón
             switch (estadoActual)
             {
                 case EstadoBoca.Abierta:

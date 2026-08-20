@@ -36,7 +36,7 @@ public class Parry : MonoBehaviour
     {
         if (!value.isPressed) return;
 
-        // Si tenemos un pez en la boca, hacer parry sobre él
+        // Si tenemos un pez en la boca, se le hace parry a el
         AtaqueTiburon ataque = GetComponent<AtaqueTiburon>();
         if (ataque != null && ataque.tienePezAgarrado)
         {
