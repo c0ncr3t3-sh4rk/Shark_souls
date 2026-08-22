@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Proyectil : MonoBehaviour
+public class Proyectil : MonoBehaviour, IParryable
 {
     private Vector2 direccion;
     private float velocidad;
@@ -73,13 +73,13 @@ public class Proyectil : MonoBehaviour
         transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
     }
 
-    public void OnParry(GameObject parriedBy, float dano)
+    public void OnParry(GameObject parriedBy, int dano)
     {
         StopAllCoroutines();
 
         ProyectilDevuelto proyectil = gameObject.GetComponent<ProyectilDevuelto>() ?? gameObject.AddComponent<ProyectilDevuelto>();
-        int danoInt = Mathf.CeilToInt(dano);
-        proyectil.Disparar(50f, danoInt + 5);
+        proyectil.Disparar(50f, dano + 5);
+        Debug.Log($"Proyectil devuelto con daño: {dano + 5}");
 
         Destroy(this); 
     }
