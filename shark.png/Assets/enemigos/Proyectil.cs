@@ -14,7 +14,7 @@ public class Proyectil : MonoBehaviour, IParryable
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb.freezeRotation = true;   
-        spriteRenderer.flipX = true; // cagada mia, el sprite estaba al revés y tardo mas abriendo el gimp
+        spriteRenderer.flipX = true; // cagada mia, el sprite estaba al revés y tardo mas abriendo el gimp q haciendo esta mierda
     }
 
     public void Disparar(Vector2 dir, float vel, float dan)
@@ -42,15 +42,11 @@ public class Proyectil : MonoBehaviour, IParryable
         {
             SaludTiburon vida = collision.GetComponent<SaludTiburon>();
             
-            // Seguridad: Validamos que el componente del jugador exista antes de dañarlo
-            if (vida != null)
-            {
-                int danoInt = (int)dano;
-                vida.RecibirDano(danoInt);
-            }
+            int danoInt = (int)dano;
+            vida.RecibirDano(danoInt);
             Destroy(gameObject);
         }
-        else if (((1 << collision.gameObject.layer) & LayerMask.GetMask("Paredes")) != 0) 
+        else if (((1 << collision.gameObject.layer) & LayerMask.GetMask("Salas")) != 0) 
         {
             Destroy(gameObject);
         }
@@ -59,6 +55,10 @@ public class Proyectil : MonoBehaviour, IParryable
     private void GirarSprite()
     {
         // Evitamos calcular si la bala se frena por completo por alguna razón
+
+        // Peña he leido el comentario este de arriba y no se que clase de retrasado lo ha escrito por q no he sido yo
+        // y me ha hecho mucha gracia por que claramente se por que 
+        // ''evitamos'' calcular si la bala se frena por completo xd
         if (rb.linearVelocity.magnitude < 0.1f) return;
 
         float anguloZ = Mathf.Atan2(rb.linearVelocity.y, rb.linearVelocity.x) * Mathf.Rad2Deg;
@@ -79,8 +79,8 @@ public class Proyectil : MonoBehaviour, IParryable
 
         ProyectilDevuelto proyectil = gameObject.GetComponent<ProyectilDevuelto>() ?? gameObject.AddComponent<ProyectilDevuelto>();
         proyectil.Disparar(50f, dano + 5);
-        Debug.Log($"Proyectil devuelto con daño: {dano + 5}");
 
         Destroy(this); 
     }
+    //no se q me dio en este archivo que no hay un solo comentario util, pero bueno en plan si todo es copy paste de otros laos
 }

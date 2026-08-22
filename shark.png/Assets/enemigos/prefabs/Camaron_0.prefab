@@ -145,7 +145,7 @@ MonoBehaviour:
   danoProyectil: 1
   tiempoEntreDisparos: 2
   fuerzaDash: 150
-  cdDash: 1
+  cdDash: 1.3
   amortiguacionHuida: 10
 --- !u!50 &5161094240673516941
 Rigidbody2D:
