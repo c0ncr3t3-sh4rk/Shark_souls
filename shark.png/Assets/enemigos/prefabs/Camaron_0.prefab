@@ -135,10 +135,15 @@ MonoBehaviour:
   distanciaDeteccionPared: 1.5
   capaParedes:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 5184
   distanciaAlJugador: 0
   rangoAtaque: 10
   rangoHuida: 5
+  prefabBala: {fileID: 5147564195701420683, guid: b48bdb995a7bacae6ac08ec3ec3b527b, type: 3}
+  puntoDisparo: {fileID: 9040078487132198453}
+  velocidadProyectil: 25
+  danoProyectil: 1
+  tiempoEntreDisparos: 2
   fuerzaDash: 100
   cdDash: 1
   amortiguacionHuida: 10

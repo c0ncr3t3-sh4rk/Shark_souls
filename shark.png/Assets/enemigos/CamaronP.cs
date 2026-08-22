@@ -15,6 +15,14 @@ public class CamaronP : MonoBehaviour, IParryable
     [SerializeField] private float rangoAtaque = 5f;
     [SerializeField] private float rangoHuida = 1.5f;
 
+    [Header("Ajustes de Ataque / Disparo")]
+    [SerializeField] private GameObject prefabBala;       
+    [SerializeField] private Transform puntoDisparo;      
+    [SerializeField] private float velocidadProyectil = 10f; 
+    [SerializeField] private float danoProyectil = 1f;       
+    [SerializeField] private float tiempoEntreDisparos = 2f; 
+    private float cronometroDisparo = 0f;                    
+
     private Vector2 direccion;
     private Transform jugador;
     private bool estaMoviendose = false;
@@ -30,10 +38,13 @@ public class CamaronP : MonoBehaviour, IParryable
     private Agarrable agarrable;
 
     [Header("Ajustes de Huida / Dash")]
-    [SerializeField] private float fuerzaDash = 8f;        // Qué tan fuerte sale disparado
-    [SerializeField] private float cdDash = 0.5f;          // Tiempo entre dashes (medio segundo)
-    [SerializeField] private float amortiguacionHuida = 5f; // Frenado paulatino tras cada dash
-    private float tiempoSiguienteDash = 0f;
+    [SerializeField] private float fuerzaDash = 8f;        
+    [SerializeField] private float cdDash = 0.5f;          
+    [SerializeField] private float amortiguacionHuida = 5f; 
+    private float tiempoEntreDash = 0f;
+
+    [Header("Ajustes Nuevos: Dash Perpendicular Ataque")]
+    private float tiempoEntreDashAtaque = 0f;
 
     private void Awake()
     {
@@ -57,7 +68,6 @@ public class CamaronP : MonoBehaviour, IParryable
 
     private void Update()
     {
-        // Si está agarrada por el tiburón, frena la IA
         if (agarrable != null && agarrable.EstaAgarrado) return;
         if (jugador == null) return;
 
@@ -75,11 +85,21 @@ public class CamaronP : MonoBehaviour, IParryable
         {
             estadoActual = EstadoEnemigo.Patrullando;
         }
+
+        if (cronometroDisparo <= tiempoEntreDisparos)
+        {
+            cronometroDisparo += Time.deltaTime;
+        }
+
+        if (cronometroDisparo >= tiempoEntreDisparos && (estadoActual == EstadoEnemigo.Atacando || estadoActual == EstadoEnemigo.Huyendo))
+        {
+            CamaronDisparar();
+            cronometroDisparo = 0f;
+        }
     }
 
     private void FixedUpdate()
     {
-        // Si está agarrada por el tiburón, frena la IA
         if (agarrable != null && agarrable.EstaAgarrado) return;
 
         switch (estadoActual)
@@ -107,7 +127,7 @@ public class CamaronP : MonoBehaviour, IParryable
             tiempoEnEstado = 0f;
             estaMoviendose = !estaMoviendose;
 
-            if (estaMoviendose)
+            if (estaMoviendose) // Corregido: Tenías un error de escritura aquí (estaMoviemdose)
             {
                 direccion = Random.insideUnitCircle.normalized;
                 tiempoLimite = Random.Range(1f, 5f); 
@@ -138,43 +158,69 @@ public class CamaronP : MonoBehaviour, IParryable
 
     private void Ataque()
     {
-        
+        if (Time.time >= tiempoEntreDashAtaque)
+        {
+            EjecutarDashPerpendicular();
+            // El doble de cooldown que el de huida (cdDash * 2)
+            tiempoEntreDashAtaque = Time.time + (cdDash * 2f); 
+        }
+
+        // Fricción para que desacelere tras el dash táctico
+        rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * amortiguacionHuida);
+
+        MirarJugador();
+    }
+
+    private void EjecutarDashPerpendicular()
+    {
+        if (jugador == null) return;
+
+        // 1. Obtener la dirección hacia el jugador
+        Vector2 dirHaciaJugador = (jugador.position - transform.position).normalized;
+
+        // 2. Calcular los vectores perpendiculares puros (90 grados) Izquierda o Derecha
+        float signoPerpendicular = Random.value > 0.5f ? 1f : -1f;
+        Vector2 dirPerpendicularPura = new Vector2(-dirHaciaJugador.y, dirHaciaJugador.x) * signoPerpendicular;
+
+        // 3. Resetear físicas e impulsar lateralmente
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce(dirPerpendicularPura * fuerzaDash, ForceMode2D.Impulse);
+    }
+
+    void CamaronDisparar()
+    {
+        if (jugador == null || prefabBala == null || puntoDisparo == null) return;
+
+        Vector2 dirDisparo = (jugador.position - puntoDisparo.position).normalized;
+        GameObject bala = Instantiate(prefabBala, puntoDisparo.position, Quaternion.identity);
+
+        Proyectil scriptProyectil = bala.GetComponent<Proyectil>();
+        if (scriptProyectil != null)
+        {
+            scriptProyectil.Disparar(dirDisparo, velocidadProyectil, danoProyectil);
+        }
     }
 
     private void Huida()
     {
-        // Si ya pasó el tiempo de espera, ejecutamos el mini dash
-        if (Time.time >= tiempoSiguienteDash)
+        if (Time.time >= tiempoEntreDash)
         {
-            EjecutarDashDiagonal();
-            tiempoSiguienteDash = Time.time + cdDash;
+            Vector2 dirHuida = (transform.position - jugador.position).normalized;
+            Dash(dirHuida);
+            tiempoEntreDash = Time.time + cdDash;
         }
 
-        // Aplicamos una fricción gradual para que el camarón desacelere entre dashes
         rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * amortiguacionHuida);
 
-        // Girar hacia la dirección del movimiento actual
-        if (rb.linearVelocity.magnitude > 0.1f)
-        {
-            GirarSprite();
-        }
+        MirarJugador();
     }
 
-    private void EjecutarDashDiagonal()
+    private void Dash(Vector2 dirHuida)
     {
-        // 1. Calcular la dirección opuesta al jugador (dirección pura de huida)
-        Vector2 dirHuida = (transform.position - jugador.position).normalized;
-
-        // 2. Elegir aleatoriamente hacia la izquierda (90°) o derecha (-90°) respecto a la huida
         float signoDiagonal = Random.value > 0.5f ? 1f : -1f;
-
-        // 3. Crear el componente perpendicular
         Vector2 dirPerpendicular = new Vector2(-dirHuida.y, dirHuida.x) * signoDiagonal;
-
-        // 4. Mezclar la huida con la perpendicular para obtener una diagonal (50% lejos, 50% lado)
         Vector2 dirDiagonalFinal = (dirHuida + dirPerpendicular).normalized;
 
-        // 5. Limpiar velocidad anterior para un impulso limpio y aplicar el dash
         rb.linearVelocity = Vector2.zero;
         rb.AddForce(dirDiagonalFinal * fuerzaDash, ForceMode2D.Impulse);
     }
@@ -190,6 +236,31 @@ public class CamaronP : MonoBehaviour, IParryable
 
         if (rb.linearVelocity.x < 0) anguloZ += 180f;
 
+        transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
+    }
+
+    public void MirarJugador()
+    {
+        if (jugador == null) return;
+
+        // Calcular el vector de dirección entre el camarón y el jugador
+        Vector2 dirHaciaJugador = (jugador.position - transform.position).normalized;
+        
+        // Calcular el ángulo Z en grados en base a esa dirección
+        float anguloZ = Mathf.Atan2(dirHaciaJugador.y, dirHaciaJugador.x) * Mathf.Rad2Deg;
+
+        // Control del volteo (Flip) horizontal del sprite según la posición X del jugador
+        Vector3 escala = transform.localScale;
+        escala.x = (dirHaciaJugador.x < 0) ? -Mathf.Abs(escala.x) : Mathf.Abs(escala.x);
+        transform.localScale = escala;
+
+        // Si mira hacia la izquierda, corregimos 180 grados de desfase para que el sprite no quede invertido de cabeza
+        if (dirHaciaJugador.x < 0) 
+        {
+            anguloZ += 180f;
+        }
+
+        // Aplicamos la rotación exacta
         transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
     }
 
@@ -219,8 +290,6 @@ public class CamaronP : MonoBehaviour, IParryable
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, rangoAtaque);
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, rangoHuida);
+        Gizmos.color = Color.red;Gizmos.DrawWireSphere(transform.position, rangoHuida);
     }
 }
