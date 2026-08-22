@@ -193,7 +193,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e78be2cbac0248146a458db6abc0c3ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VidaEnemigo
-  vidaMaxima: 300000
+  vidaMaxima: 1
   sangre: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
   sangreMuerte: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
   salaAsignada: {fileID: 0}

@@ -2781,8 +2781,6 @@ MonoBehaviour:
     visualBloqueo: {fileID: 9158777117717088503}
     estaConectado: 0
   posGrid: {x: 0, y: 0}
-  maquinaPrefab: {fileID: 231654207131675458, guid: 54e1e107e75f5724d867addd8018bcdc, type: 3}
-  puntoSpawnMaquina: {fileID: 0}
   salaCompletada: 0
   boundsCamara: {fileID: 227702547441469121}
   requiereSpawneo: 0
@@ -2848,13 +2846,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SharkSouls.Dungeon.GeneradorEnemigos
   enemigosDisponibles:
   - prefab: {fileID: 5526588677566135864, guid: ca08d5b88626abb4982275bfe29e4238, type: 3}
-    peso: 31.5
+    peso: 50
     coste: 2
     maximoPorSala: 0
   - prefab: {fileID: 4897203831263170463, guid: ac8c76782b818b6408d716edc6e35048, type: 3}
-    peso: 0
+    peso: 12.1
     coste: 1
     maximoPorSala: 3
+  - prefab: {fileID: 7053437688370081795, guid: 6940eec1bb6ec19528a0a99ae57b74eb, type: 3}
+    peso: 10
+    coste: 2
+    maximoPorSala: 10
+  - prefab: {fileID: 1987541401483823823, guid: 78682d853faf941c395fdc51daeef9f1, type: 3}
+    peso: 10
+    coste: 3
+    maximoPorSala: 5
+  - prefab: {fileID: 1751224304027465799, guid: 0f2ee919f4680173182def87abaafd18, type: 3}
+    peso: 10
+    coste: 3
+    maximoPorSala: 5
+  - prefab: {fileID: 578901430753990885, guid: f9fdf695dc6401b34a00a476c1736180, type: 3}
+    peso: 5
+    coste: 10
+    maximoPorSala: 1
   presupuestoBase: 10
   incrementoPresupuestoPorSala: 10
   presupuestoSimultaneoMaximo: 200
