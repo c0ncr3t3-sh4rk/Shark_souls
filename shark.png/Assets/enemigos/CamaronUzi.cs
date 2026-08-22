@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CamaronEscopeta : MonoBehaviour, IParryable
+public class CamaronUzi : MonoBehaviour, IParryable
 {
     private enum EstadoEnemigo { Patrullando, Atacando, Huyendo }
     [SerializeField] private EstadoEnemigo estadoActual = EstadoEnemigo.Patrullando;
@@ -20,11 +20,13 @@ public class CamaronEscopeta : MonoBehaviour, IParryable
     [SerializeField] private Transform puntoDisparo;      
     [SerializeField] private float velocidadProyectil = 10f; 
     [SerializeField] private float danoProyectil = 1f;       
-    [SerializeField] private float tiempoEntreDisparos = 2f; 
-    [SerializeField] private int nBalas = 5;
-    [SerializeField] private float anguloDispersion = 30f;
-    private float cronometroDisparo = 0f;                    
+    [SerializeField] private float tiempoEntreAtaques = 2f; 
+    [SerializeField] private int nBalas = 15;
+    [SerializeField] private float tiempoEntreDisparos = 0.3f;
+    [SerializeField] private float gradosAtaque = 15f;
+    private bool estaDisparando = false; 
 
+    private float cronometroDisparo = 0f;
     private Vector2 direccion;
     private Transform jugador;
     private bool estaMoviendose = false;
@@ -44,6 +46,8 @@ public class CamaronEscopeta : MonoBehaviour, IParryable
     [SerializeField] private float cdDash = 0.5f;          
     [SerializeField] private float amortiguacionHuida = 5f; 
     private float tiempoEntreDash = 0f;
+
+    [Header("Ajustes Nuevos: Dash Perpendicular Ataque")]
     private float tiempoEntreDashAtaque = 0f;
 
     private void Awake()
@@ -67,9 +71,8 @@ public class CamaronEscopeta : MonoBehaviour, IParryable
     }
 
     private void Update()
-    {
-        if (agarrable != null && agarrable.EstaAgarrado) return;
-        if (jugador == null) return;
+    {   
+        if ((agarrable != null && agarrable.EstaAgarrado) || jugador == null || estaDisparando) return;
 
         distanciaAlJugador = Vector2.Distance(transform.position, jugador.position);
 
@@ -86,21 +89,21 @@ public class CamaronEscopeta : MonoBehaviour, IParryable
             estadoActual = EstadoEnemigo.Patrullando;
         }
 
-        if (cronometroDisparo <= tiempoEntreDisparos)
+        if (cronometroDisparo <= tiempoEntreAtaques)
         {
             cronometroDisparo += Time.deltaTime;
         }
 
-        if (cronometroDisparo >= tiempoEntreDisparos && (estadoActual == EstadoEnemigo.Atacando || estadoActual == EstadoEnemigo.Huyendo))
+        if (cronometroDisparo >= tiempoEntreAtaques && (estadoActual == EstadoEnemigo.Atacando || estadoActual == EstadoEnemigo.Huyendo))
         {
-            CamaronDisparar();
+            StartCoroutine(CamaronDisparar());
             cronometroDisparo = 0f;
         }
     }
 
     private void FixedUpdate()
     {
-        if (agarrable != null && agarrable.EstaAgarrado) return;
+        if ((agarrable != null && agarrable.EstaAgarrado) || estaDisparando) return;
 
         switch (estadoActual)
         {
@@ -187,36 +190,30 @@ public class CamaronEscopeta : MonoBehaviour, IParryable
         rb.AddForce(dirPerpendicularPura * fuerzaDash, ForceMode2D.Impulse);
     }
 
-    void CamaronDisparar()
+    System.Collections.IEnumerator CamaronDisparar()
     {
-        if (jugador == null || prefabBala == null || puntoDisparo == null || nBalas <= 0) return;
+        estaDisparando = true;
 
-        Vector2 dirBase = (jugador.position - puntoDisparo.position).normalized;
-        
-        float anguloBase = Mathf.Atan2(dirBase.y, dirBase.x) * Mathf.Rad2Deg;
+        Vector2 dirHaciaJugador = (jugador.position - puntoDisparo.position).normalized;
 
-        //cosas de balas
         for (int i = 0; i < nBalas; i++)
         {
-            float desvio = 0f;
-            desvio = Mathf.Lerp(-anguloDispersion / 2f, anguloDispersion / 2f, (float)i / (nBalas - 1));
-            
-            float anguloFinal = anguloBase + desvio;
-            float radianes = anguloFinal * Mathf.Deg2Rad;
-            Vector2 dirBala = new Vector2(Mathf.Cos(radianes), Mathf.Sin(radianes));
+            float anguloBala = Random.Range(-gradosAtaque, gradosAtaque);
+
+            Vector2 dirBalaFinal = Quaternion.Euler(0, 0, anguloBala) * dirHaciaJugador;
+
+            GirarSprite(dirBalaFinal);
 
             GameObject bala = Instantiate(prefabBala, puntoDisparo.position, Quaternion.identity);
             Proyectil scriptProyectil = bala.GetComponent<Proyectil>();
-            
-            if (scriptProyectil != null)
-            {
-                scriptProyectil.Disparar(dirBala, velocidadProyectil, danoProyectil);
-            }
+
+            scriptProyectil.Disparar(dirBalaFinal, velocidadProyectil, danoProyectil);
+
+            yield return new WaitForSeconds(tiempoEntreDisparos);
         }
 
-        Dash((transform.position - jugador.position).normalized);
+        estaDisparando = false;
     }
-
 
     private void Huida()
     {
@@ -244,14 +241,24 @@ public class CamaronEscopeta : MonoBehaviour, IParryable
 
     private void GirarSprite()
     {
-        float anguloZ = Mathf.Atan2(rb.linearVelocity.y, rb.linearVelocity.x) * Mathf.Rad2Deg;
+        if (rb != null)
+        {
+            GirarSprite(rb.linearVelocity);
+        }
+    }
+
+    private void GirarSprite(Vector2 direccion)
+    {
+        if (direccion.sqrMagnitude < 0.001f) return;
+
+        float anguloZ = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
         anguloZ = Mathf.Round(anguloZ / 45f) * 45f;
 
         Vector3 escala = transform.localScale;
-        escala.x = (rb.linearVelocity.x < 0) ? -Mathf.Abs(escala.x) : Mathf.Abs(escala.x);
+        escala.x = (direccion.x < 0) ? -Mathf.Abs(escala.x) : Mathf.Abs(escala.x);
         transform.localScale = escala;
 
-        if (rb.linearVelocity.x < 0) anguloZ += 180f;
+        if (direccion.x < 0) anguloZ += 180f;
 
         transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
     }
@@ -260,25 +267,9 @@ public class CamaronEscopeta : MonoBehaviour, IParryable
     {
         if (jugador == null) return;
 
-        // Calcular el vector de dirección entre el camarón y el jugador
         Vector2 dirHaciaJugador = (jugador.position - transform.position).normalized;
         
-        // Calcular el ángulo Z en grados en base a esa dirección
-        float anguloZ = Mathf.Atan2(dirHaciaJugador.y, dirHaciaJugador.x) * Mathf.Rad2Deg;
-
-        // Control del volteo (Flip) horizontal del sprite según la posición X del jugador
-        Vector3 escala = transform.localScale;
-        escala.x = (dirHaciaJugador.x < 0) ? -Mathf.Abs(escala.x) : Mathf.Abs(escala.x);
-        transform.localScale = escala;
-
-        // Si mira hacia la izquierda, corregimos 180 grados de desfase para que el sprite no quede invertido de cabeza
-        if (dirHaciaJugador.x < 0) 
-        {
-            anguloZ += 180f;
-        }
-
-        // Aplicamos la rotación exacta
-        transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
+       GirarSprite(dirHaciaJugador);
     }
 
     public void OnParry(GameObject parriedBy, int damage)

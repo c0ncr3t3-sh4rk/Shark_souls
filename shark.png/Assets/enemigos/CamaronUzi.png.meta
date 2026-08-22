@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: f183e7317dcb508f882c644b73d1f52b
+guid: 9eccc02c6a2f2c9958413c6a1f8f9cf0
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5727396395741103974
-    second: CamaronEscopeta_0
+      213: 136136706496880021
+    second: CamaronUzi_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: CamaronEscopeta_0
+      name: CamaronUzi_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 149
-        width: 972
-        height: 846
-      alignment: 9
-      pivot: {x: 0.2358619, y: 0.33423486}
+        x: 133
+        y: 236
+        width: 494
+        height: 484
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a98bff7b2533480b0800000000000000
-      internalID: -5727396395741103974
+      spriteID: 59d53affc97a3e100800000000000000
+      internalID: 136136706496880021
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 7f1c88675b4eb2cd3bc36c9b46e78b05
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      CamaronEscopeta_0: -5727396395741103974
+      CamaronUzi_0: 136136706496880021
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
