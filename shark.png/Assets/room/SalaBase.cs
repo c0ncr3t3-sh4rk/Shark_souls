@@ -73,18 +73,11 @@ namespace SharkSouls.Dungeon
         {
             if (!collision.CompareTag("Player")) return;
 
-            CamaraSala cam = Camera.main.GetComponent<CamaraSala>();
-            if (cam != null && boundsCamara != null)
-                cam.FijarSalaActual(this);
-
-            if (salaCompletada || (tipo != TipoSala.Normal && tipo != TipoSala.Especial)) return;
-            
-            Debug.Log($"[SalaBase] Player entró. requiereSpawneo: {requiereSpawneo}");
-            if (!requiereSpawneo) return;
-
+            // Guardamos la referencia del jugador para empezar a comprobar si está dentro
             esperandoEntrada = true;
             jugadorTransform = collision.transform;
-            Debug.Log($"[SalaBase] Esperando entrada...");
+
+            Debug.Log($"[SalaBase] Player tocó el trigger de la sala {gameObject.name}. Esperando entrada segura...");
         }
 
         private void Update()
@@ -93,16 +86,30 @@ namespace SharkSouls.Dungeon
 
             Bounds b = boundsCamara.bounds;
             
-            // Comprobación manual 2D ignorando el eje Z y aplicando el margen interno de 1.5 unidades (-3 total)
+            // Comprobación manual 2D ignorando el eje Z y aplicando el margen interno de 1.5 unidades
             float margen = 1.5f;
             bool dentroX = jugadorTransform.position.x > (b.min.x + margen) && jugadorTransform.position.x < (b.max.x - margen);
             bool dentroY = jugadorTransform.position.y > (b.min.y + margen) && jugadorTransform.position.y < (b.max.y - margen);
 
             if (!dentroX || !dentroY) return;
 
-            Debug.Log($"[SalaBase] Jugador dentro de zona segura. Ejecutando spawn.");
+            // --- AHORA SÍ: El jugador está totalmente DENTRO de la sala ---
+            
+            // 1. Cambiamos la cámara solo cuando el jugador se ha adentrado lo suficiente
+            CamaraSala cam = Camera.main.GetComponent<CamaraSala>();
+            if (cam != null && boundsCamara != null)
+            {
+                cam.FijarSalaActual(this);
+            }
+
             esperandoEntrada = false;
-            EjecutarSpawnYCerrarPuertas();
+
+            // 2. Ejecutamos el spawn si correspondía
+            if (!salaCompletada && (tipo == TipoSala.Normal || tipo == TipoSala.Especial))
+            {
+                Debug.Log($"[SalaBase] Jugador dentro de zona segura. Ejecutando spawn.");
+                EjecutarSpawnYCerrarPuertas();
+            }
         }
 
         private void EjecutarSpawnYCerrarPuertas()

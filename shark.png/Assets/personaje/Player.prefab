@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 4048019093353156596}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.543, y: 0.026, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -66,8 +66,39 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.617875, y: 0.113564625}
+  m_Offset: {x: 0, y: 0}
   m_Radius: 0.98197514
+--- !u!1 &6036580562880805857
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 275087919483215068}
+  m_Layer: 7
+  m_Name: Camara
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &275087919483215068
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6036580562880805857}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.54, y: 0.07, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1079403260525664423}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8923012397462302499
 GameObject:
   m_ObjectHideFlags: 0
@@ -91,6 +122,7 @@ GameObject:
   - component: {fileID: 5895705810879998544}
   - component: {fileID: 1312495328887545107}
   - component: {fileID: 6976112767867736471}
+  - component: {fileID: 8791772693801191264}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -113,6 +145,7 @@ Transform:
   m_Children:
   - {fileID: 6365774841951736013}
   - {fileID: 2400722115282285976}
+  - {fileID: 275087919483215068}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3876546944757710789
@@ -227,9 +260,9 @@ Rigidbody2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!60 &4403618876355373952
 PolygonCollider2D:
@@ -261,11 +294,11 @@ PolygonCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 1.6, y: -0.1}
+  m_Offset: {x: 1.6, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.19, y: 0.5}
@@ -277,13 +310,9 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 1.005, y: 0.42}
-      - {x: 0.955, y: 0.41}
-      - {x: 0.825, y: 0.34}
-      - {x: 0.60499996, y: 0.39999998}
-      - {x: -0.105, y: 0.56}
-      - {x: -0.21499999, y: 0.59999996}
-      - {x: -0.285, y: 0.68}
+    - - {x: -0.10500002, y: 0.56}
+      - {x: -0.21500003, y: 0.59999996}
+      - {x: -0.28499997, y: 0.68}
       - {x: -0.745, y: 0.65999997}
       - {x: -0.865, y: 0.63}
       - {x: -1.045, y: 0.61}
@@ -307,18 +336,7 @@ PolygonCollider2D:
       - {x: -0.945, y: -0.29999998}
       - {x: -0.655, y: -0.31}
       - {x: -0.255, y: -0.24}
-      - {x: -0.085, y: -0.19999999}
-      - {x: 0.114999995, y: -0.17}
-      - {x: 0.16499999, y: -0.22999999}
-      - {x: 0.24499999, y: -0.22}
-      - {x: 0.325, y: -0.16}
-      - {x: 0.445, y: -0.19999999}
-      - {x: 0.48499998, y: -0.19999999}
-      - {x: 0.505, y: -0.17999999}
-      - {x: 0.515, y: -0.08}
-      - {x: 0.865, y: 0.01}
-      - {x: 0.935, y: -0.049999997}
-      - {x: 1.015, y: -0.049999997}
+      - {x: -0.08500004, y: -0.19999999}
   m_UseDelaunayMesh: 1
 --- !u!114 &913359149245684898
 MonoBehaviour:
@@ -410,6 +428,15 @@ MonoBehaviour:
   danoMordisco: 1
   colliderBoca: {fileID: 2109743843802710890}
   puntoBoca: {fileID: 0}
+  girosParaBapuleo: 3
+  tiempoMaximoEntreGiros: 0.3
+  danoBapuleo: 2
+  onGolpeBapuleo:
+    m_PersistentCalls:
+      m_Calls: []
+  onMuerteBapuleo:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &4603606583405158769
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -562,6 +589,43 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SabiduriaTiburon
   sabiduria: 0
+--- !u!70 &8791772693801191264
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8923012397462302499}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: -0.027210174, y: 0.13657926}
+  m_Size: {x: 2.0497377, y: 1.0158273}
+  m_Direction: 1
 --- !u!1 &9146751626432175500
 GameObject:
   m_ObjectHideFlags: 0
@@ -588,7 +652,7 @@ Transform:
   m_GameObject: {fileID: 9146751626432175500}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.604, y: 0.019, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -628,6 +692,6 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.78064626, y: 0.003649177}
+  m_Offset: {x: 0, y: 0}
   m_Size: {x: 2.7540817, y: 3.6842544}
   m_Direction: 0
