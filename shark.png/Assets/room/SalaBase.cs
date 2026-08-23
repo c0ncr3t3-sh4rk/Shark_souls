@@ -105,7 +105,7 @@ namespace SharkSouls.Dungeon
             esperandoEntrada = false;
 
             // 2. Ejecutamos el spawn si correspondía
-            if (!salaCompletada && (tipo == TipoSala.Normal || tipo == TipoSala.Especial))
+            if (!salaCompletada && (tipo == TipoSala.Normal || tipo == TipoSala.Especial || tipo == TipoSala.Boss))
             {
                 Debug.Log($"[SalaBase] Jugador dentro de zona segura. Ejecutando spawn.");
                 EjecutarSpawnYCerrarPuertas();

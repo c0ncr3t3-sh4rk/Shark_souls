@@ -313,7 +313,7 @@ namespace SharkSouls.Dungeon
                 salaScript.boundsCamara.gameObject.AddComponent<LimiteSala>();
             }
 
-            if (spawnearEnemigos && (tipo == TipoSala.Normal || tipo == TipoSala.Especial))
+            if (spawnearEnemigos && (tipo == TipoSala.Normal || tipo == TipoSala.Especial || tipo == TipoSala.Boss))
             {
                 salaScript.requiereSpawneo = true;
                 salaScript.dificultadAlCrear = dificultadGlobal;

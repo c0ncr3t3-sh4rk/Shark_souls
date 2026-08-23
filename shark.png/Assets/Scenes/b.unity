@@ -1681,7 +1681,7 @@ MonoBehaviour:
   - prefab: {fileID: 3142154782437075049, guid: 34ac96992e5d8204fb32d8aea3d95882, type: 3}
     peso: 0
   prefabsBoss:
-  - prefab: {fileID: 1039187652530115193, guid: 79fec54c9ce35fc4890a17789783fac4, type: 3}
+  - prefab: {fileID: 9213198557144558484, guid: f5f605ac2b7a66f3a97a822f90e65192, type: 3}
     peso: 0
   prefabsNormales:
   - prefab: {fileID: 1257558406687279987, guid: 16646d243128d634e8421f6869ea6f03, type: 3}
@@ -1693,12 +1693,12 @@ MonoBehaviour:
   prefabsEspeciales:
   - prefab: {fileID: 2681682223623875885, guid: a29f278577b0c8c4a97e7e0a22605e9e, type: 3}
     peso: 100
-    maxApariciones: 21
+    maxApariciones: 5
     generaEnemigos: 1
     aparicionesRestantes: 0
   dificultadGlobal: 10
   salasCompletadas: 0
-  numSalas: 30
+  numSalas: 10
   tamanoCeldaX: 20
   tamanoCeldaY: 20
   probabilidadRamificacion: 1
