@@ -1,10 +1,16 @@
 using UnityEngine;
+using System;
 using System.Collections;
 
 public class VidaEnemigo : MonoBehaviour
 {
     [SerializeField] private int vidaMaxima = 3;
     private int vidaActual;
+
+    public event Action<int, int> OnVidaCambiada;
+    public event Action OnMuerto;
+    public int VidaActual => vidaActual;
+    public int VidaMaxima => vidaMaxima;
 
     [Header("Visuales")]
     [SerializeField] private GameObject sangre;
@@ -29,6 +35,7 @@ public class VidaEnemigo : MonoBehaviour
     public void RecibirDano(int cantidad)
     {
         vidaActual -= cantidad;
+        OnVidaCambiada?.Invoke(vidaActual, vidaMaxima);
 
         if (Combo.Instancia != null)
             Combo.Instancia.Hit();
@@ -44,6 +51,7 @@ public class VidaEnemigo : MonoBehaviour
 
         if (vidaActual <= 0)
         {
+            OnMuerto?.Invoke();
             Morir();
         } else
         {
@@ -84,5 +92,11 @@ public class VidaEnemigo : MonoBehaviour
             SharkSouls.Utils.SimpleObjectPool.Instance.ReturnToPool(gameObject);
         else
             Destroy(gameObject);
+    }
+
+    public void Curar(int cantidad)
+    {
+        vidaActual = Mathf.Min(vidaActual + cantidad, vidaMaxima);
+        OnVidaCambiada?.Invoke(vidaActual, vidaMaxima);
     }
 }
