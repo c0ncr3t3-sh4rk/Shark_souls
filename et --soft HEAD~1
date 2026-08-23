@@ -1,0 +1,162 @@
+[33mcommit 3784db3e68c542ec89df9a19933460229a2f9fdb[m[33m ([m[1;36mHEAD[m[33m, [m[1;32mdev[m[33m)[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Wed Jun 24 11:59:54 2026 +0200
+
+    parry enemigos y minas
+
+[33mcommit cf210618770e05bd66080ee3378babc30c8a13aa[m[33m ([m[1;31morigin/dev[m[33m)[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Sat Jun 20 10:50:03 2026 +0200
+
+    Scene b
+
+[33mcommit f4bd728735c9f24560360a135bb00be2f05f373b[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Sat Jun 20 09:54:26 2026 +0200
+
+    Generador de salas y de dungeons
+
+[33mcommit 44b0b4e8fd3397bf0a04cc388c8e0835209e0ee4[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Fri Jun 19 15:58:57 2026 +0200
+
+    colores del combo
+
+[33mcommit 315ce322a3696748536e5e2f6f6f070dd0aaa6da[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Fri Jun 19 11:20:42 2026 +0200
+
+    combo
+
+[33mcommit b190a7ba714602047450ccd9fa20d123abef1e9c[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Thu Jun 18 13:41:38 2026 +0200
+
+    combo
+
+[33mcommit ed965bdea8e53392c2c17823d658226b8200dca4[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Mon Jun 15 13:41:51 2026 +0200
+
+    rotacion y animacion
+
+[33mcommit b7d29c0d051b422d14cbcd0b82f4f12dde98dfc0[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Mon Jun 15 12:50:47 2026 +0200
+
+    Asficxia y mejroas minas
+
+[33mcommit e6c5b6aff2de13e6375c5f0e213921617a1dc192[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Mon Jun 15 00:06:23 2026 +0200
+
+    Minas submarinas
+
+[33mcommit 534aa84a9f280b3cd2d2048b844735ecdcdb8eed[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Sun Jun 14 19:30:04 2026 +0200
+
+    MovimientoAleatorio mejorado y Movimiento/Ataque de la Barracuda
+
+[33mcommit 0c08829cc7bc9ce713369540154f1c65ab039e9c[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sun Jun 14 17:48:27 2026 +0200
+
+    hitbox y vida barracuda
+
+[33mcommit 0c9fbef353ca09f41f189df0c001d0889b376a31[m
+Merge: c082798 772ce27
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sun Jun 14 15:37:11 2026 +0200
+
+    Merge branch 'dev' of https://github.com/c0ncr3t3-sh4rk/Shark_souls into dev
+
+[33mcommit c0827983534085598c639cc57d76bb36bbdde72f[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sun Jun 14 15:36:53 2026 +0200
+
+    fotos de barracudas
+
+[33mcommit 772ce27375298ba51120cc619240b98c1426cd9b[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Sun Jun 14 13:48:29 2026 +0200
+
+    Movimiento agresivo y aleatorio enemigos
+
+[33mcommit d69f3171c57135b920c219b0bcd92aedb2bdd930[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sun Jun 14 13:31:59 2026 +0200
+
+    fotos de barracudas
+
+[33mcommit 312ef91fb103752a19855deae04d7ff83932850f[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sun Jun 14 13:26:56 2026 +0200
+
+    combio de hitboxes y ataque del tiburon
+
+[33mcommit 053a62bf6e097dd97e02f244659c27b124bf4be6[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Sun Jun 14 12:22:59 2026 +0200
+
+    Contenedores corazones
+
+[33mcommit 06d47f7a3ce0c20810c08a332014389a9b4560a1[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Sun Jun 14 11:15:05 2026 +0200
+
+    Escena
+
+[33mcommit 9f8103d69634fee30ad93881f7f11d770810bd2b[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Sun Jun 14 11:13:44 2026 +0200
+
+    Vida
+
+[33mcommit fc7af421d0b2ee289edf6da2207c0e00daf1b0e6[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sun Jun 14 10:49:09 2026 +0200
+
+    sprites diagonales
+
+[33mcommit 4f392e989c21065a8099cbb69098480fa7c58d04[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sun Jun 14 10:36:37 2026 +0200
+
+    implementacion dash
+
+[33mcommit 74fb57ba7a32b32e553da75aefe3be1a4bb3d9b0[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sun Jun 14 10:16:30 2026 +0200
+
+    rotacion y mordisco
+
+[33mcommit f76d4d0fb67e38b2c165395cd11efb56c6951435[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sat Jun 13 14:41:39 2026 +0200
+
+    mordisco
+
+[33mcommit 463311ae736feaf6e687cf4f1169c3c03e3b81e1[m
+Author: SMP200 <smpsergiopalao@gmail.com>
+Date:   Sat Jun 13 14:09:21 2026 +0200
+
+    movimientoBase
+
+[33mcommit 7f70a5dbf2b1f3994f6075db082351f65a979d15[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sat Jun 13 13:41:55 2026 +0200
+
+    png personaje
+
+[33mcommit 57d2fd12a3a791c203756424ae15502e43972805[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sat Jun 13 13:19:53 2026 +0200
+
+    creacion del proyecto inicial
+
+[33mcommit dd49ec5212ef3bc803140050de4c1c82faaec14e[m
+Author: c0ncr3t3-sh4rk <c0ncr3t3sh4rk@gmail.com>
+Date:   Sat Jun 13 13:16:52 2026 +0200
+
+    Añadir GDD y .gitignore
