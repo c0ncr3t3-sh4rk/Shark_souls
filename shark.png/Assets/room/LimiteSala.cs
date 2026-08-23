@@ -23,7 +23,7 @@ namespace SharkSouls.Dungeon
 
             VidaEnemigo vida = collision.GetComponent<VidaEnemigo>() ?? collision.GetComponentInParent<VidaEnemigo>();
             if (vida != null)
-                vida.Morir();
+                vida.Morir(VidaEnemigo.TipoMuerte.Normal);
             else
                 Destroy(collision.gameObject);
         }

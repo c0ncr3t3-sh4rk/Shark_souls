@@ -43,6 +43,7 @@ public class AtaqueTiburon : MonoBehaviour
     private int ultimoLadoInput = 0;
 
     public bool tienePezAgarrado => pezAgarrado != null;
+    private bool haMatado = false;
 
     private void Awake()
     {
@@ -166,7 +167,7 @@ public class AtaqueTiburon : MonoBehaviour
 
         if (enemigo != null)
         {
-            enemigo.RecibirDano(danoBapuleo);
+            enemigo.RecibirDano(danoBapuleo, VidaEnemigo.TipoMuerte.Bapuleo);
             onGolpeBapuleo?.Invoke();
 
             if (pezAgarradoGO == null || !pezAgarradoGO.activeInHierarchy)
@@ -180,16 +181,26 @@ public class AtaqueTiburon : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        haMatado = false;
         if (estadoActual != EstadoBoca.Abierta) return;
 
         if (collision.gameObject.CompareTag("Enemigo") || collision.attachedRigidbody?.CompareTag("Enemigo") == true)
         {
             IAgarrable agarrable = collision.GetComponent<IAgarrable>() ?? collision.GetComponentInParent<IAgarrable>();
             VidaEnemigo enemigo = collision.GetComponent<VidaEnemigo>() ?? collision.GetComponentInParent<VidaEnemigo>();
+            SaludTiburon saludJugador = GetComponent<SaludTiburon>() ?? GetComponentInParent<SaludTiburon>();
 
             if (enemigo != null)
             {
-                enemigo.RecibirDano(danoMordisco);
+                haMatado = enemigo.RecibirDano(danoMordisco, VidaEnemigo.TipoMuerte.Mordisco);
+
+                if (haMatado)
+                {
+                    if (Random.Range(0f, 1f) < 1f)
+                    {
+                        saludJugador.Curar(1);
+                    }
+                }
 
                 GameObject objetivoGO = (agarrable as MonoBehaviour)?.gameObject ?? collision.gameObject;
 

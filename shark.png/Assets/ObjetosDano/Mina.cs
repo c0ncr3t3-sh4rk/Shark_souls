@@ -133,7 +133,7 @@ public class MinaSubmarina : MonoBehaviour, IParryable
             VidaEnemigo vidaEnemigo = col.GetComponent<VidaEnemigo>() ?? col.GetComponentInParent<VidaEnemigo>();
             if (vidaEnemigo != null)
             {
-                vidaEnemigo.RecibirDano(danoAObjetivos);
+                vidaEnemigo.RecibirDano(danoAObjetivos, VidaEnemigo.TipoMuerte.Normal);
             }
         }
 

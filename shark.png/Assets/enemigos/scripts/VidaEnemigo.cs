@@ -4,6 +4,14 @@ using System.Collections;
 
 public class VidaEnemigo : MonoBehaviour
 {
+    public enum TipoMuerte
+    {
+        Normal,
+        Mordisco,
+        Bapuleo,
+        proyectil
+    }
+
     [SerializeField] private int vidaMaxima = 3;
     private int vidaActual;
 
@@ -32,7 +40,7 @@ public class VidaEnemigo : MonoBehaviour
         if (sr != null) sr.color = Color.white;
     }
 
-    public void RecibirDano(int cantidad)
+    public bool RecibirDano(int cantidad, TipoMuerte tipoDaño)
     {
         vidaActual -= cantidad;
         OnVidaCambiada?.Invoke(vidaActual, vidaMaxima);
@@ -52,7 +60,8 @@ public class VidaEnemigo : MonoBehaviour
         if (vidaActual <= 0)
         {
             OnMuerto?.Invoke();
-            Morir();
+            Morir(tipoDaño);
+            return true;
         } else
         {
             IEnemigo enemigo = GetComponent<IEnemigo>();
@@ -63,6 +72,7 @@ public class VidaEnemigo : MonoBehaviour
                 enemigo.SumarAturdimiento(0.5f);
             }
         }
+        return false;
     }
 
     private IEnumerator EfectoDano()
@@ -72,7 +82,7 @@ public class VidaEnemigo : MonoBehaviour
         sr.color = Color.white;
     }
 
-    public void Morir()
+    public void Morir(TipoMuerte tipoMuerte)
     {
         if (sangreMuerte != null)
         {

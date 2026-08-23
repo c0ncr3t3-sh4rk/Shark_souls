@@ -155,7 +155,7 @@ public class SaludTiburon : MonoBehaviour
         duracionInvencibilidad += cantidad;
     }
 
-    public void addHealth(int amount)
+    public void Curar(int amount)
     {
         vidasActuales += amount;
         if (vidasActuales > vidasMaximas) vidasActuales = vidasMaximas;

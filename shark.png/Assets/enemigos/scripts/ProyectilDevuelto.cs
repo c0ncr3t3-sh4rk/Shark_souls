@@ -89,7 +89,7 @@ public class ProyectilDevuelto : MonoBehaviour
         VidaEnemigo vidaOtroEnemigo = collision.GetComponent<VidaEnemigo>() ?? collision.GetComponentInParent<VidaEnemigo>();
         if (vidaOtroEnemigo != null)
         {
-            vidaOtroEnemigo.RecibirDano(danoAEnemigos);
+            vidaOtroEnemigo.RecibirDano(danoAEnemigos, VidaEnemigo.TipoMuerte.proyectil);
             ImpactarYDestruir();
             return;
         }
@@ -108,7 +108,7 @@ public class ProyectilDevuelto : MonoBehaviour
         VidaEnemigo miVida = GetComponent<VidaEnemigo>();
         if (miVida != null)
         {
-            miVida.RecibirDano(1);
+            miVida.RecibirDano(1, VidaEnemigo.TipoMuerte.proyectil);
 
             if (gameObject != null)
             {

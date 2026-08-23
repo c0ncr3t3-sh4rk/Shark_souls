@@ -74,7 +74,7 @@ public class HuevoBoss : MonoBehaviour
         // Destruir el huevo
         if (vidaEnemigo != null)
         {
-            vidaEnemigo.Morir();
+            vidaEnemigo.Morir(VidaEnemigo.TipoMuerte.Normal);
         }
         else
         {
