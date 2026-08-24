@@ -30,6 +30,10 @@ public class AtaqueTiburon : MonoBehaviour
     public UnityEvent onGolpeBapuleo;
     public UnityEvent onMuerteBapuleo;
 
+    [Header("FX Gore / Sangre")]
+    [SerializeField] private GameObject prefabEfectoCorte;  // Prefab del Tajo/Garra estilo Hollow Knight
+    [SerializeField] private GameObject prefabSangreChorro; // Prefab de las partículas de sangre
+
     private SpriteRenderer spriteRenderer;
     public static bool estaOcupado = false;
 
@@ -168,6 +172,11 @@ public class AtaqueTiburon : MonoBehaviour
         if (enemigo != null)
         {
             enemigo.RecibirDano(danoBapuleo, VidaEnemigo.TipoMuerte.Bapuleo);
+            
+            // 🩸 SANGRE EN EL BAPULEO (Corregido: pasa transform, punto de contacto y dirección)
+            Vector2 dirRandom = Random.insideUnitCircle.normalized;
+            GenerarEfectosImpacto(pezAgarradoGO.transform, pezAgarradoGO.transform.position, dirRandom);
+
             onGolpeBapuleo?.Invoke();
 
             if (pezAgarradoGO == null || !pezAgarradoGO.activeInHierarchy)
@@ -184,12 +193,22 @@ public class AtaqueTiburon : MonoBehaviour
         haMatado = false;
         if (estadoActual != EstadoBoca.Abierta) return;
 
-        //si es un boss nos lo saltamos todo y le hacemos daño directamente
+        // Dirección de ataque
+        Vector2 direccionAtaque = (collision.transform.position - transform.position).normalized;
+        if (direccionAtaque == Vector2.zero) direccionAtaque = transform.right;
+
+        // Punto exacto del impacto de la boca
+        Vector2 puntoContacto = collision.bounds.ClosestPoint(transform.position);
+
+        // 1. SI ES UN BOSS
         IVidaBoss boss = collision.GetComponent<IVidaBoss>() ?? collision.GetComponentInParent<IVidaBoss>();
 
         if (boss != null)
         {
             boss.RecibirDano(danoMordisco);
+
+            // 🩸 EFECTOS: Centrado en el Boss, ajustado a su tamaño y con sangre desde el impacto
+            GenerarEfectosImpacto(collision.transform, puntoContacto, direccionAtaque);
 
             Debug.Log("[AtaqueTiburon] ¡Mordisco certero al Boss!");
 
@@ -198,7 +217,7 @@ public class AtaqueTiburon : MonoBehaviour
             return;
         }
 
-        // 2. SI ES UN ENEMIGO COMÚN (Lógica con VidaEnemigo e IAgarrable)
+        // 2. SI ES UN ENEMIGO COMÚN
         if (collision.gameObject.CompareTag("Enemigo") || collision.attachedRigidbody?.CompareTag("Enemigo") == true)
         {
             IAgarrable agarrable = collision.GetComponent<IAgarrable>() ?? collision.GetComponentInParent<IAgarrable>();
@@ -208,6 +227,9 @@ public class AtaqueTiburon : MonoBehaviour
             if (enemigo != null)
             {
                 haMatado = enemigo.RecibirDano(danoMordisco, VidaEnemigo.TipoMuerte.Mordisco);
+
+                // 🩸 EFECTOS: Centrado en el enemigo común
+                GenerarEfectosImpacto(collision.transform, puntoContacto, direccionAtaque);
 
                 if (haMatado)
                 {
@@ -232,6 +254,41 @@ public class AtaqueTiburon : MonoBehaviour
             }
         }
         estaOcupado = false;
+    }
+
+    /// <summary>
+    /// Instancia el tajo en el CENTRO del enemigo (escalado a su tamaño) 
+    /// y el chorro de sangre saliendo desde el punto de contacto.
+    /// </summary>
+    private void GenerarEfectosImpacto(Transform enemigoTransform, Vector2 puntoContacto, Vector2 direccionMordisco)
+    {
+        if (enemigoTransform == null) return;
+
+        // 1. TAJO ESTILO HOLLOW KNIGHT (Centrado y escalado al enemigo/boss)
+        if (prefabEfectoCorte != null)
+        {
+            float anguloCorte = Mathf.Atan2(direccionMordisco.y, direccionMordisco.x) * Mathf.Rad2Deg;
+            
+            Vector3 posicionCentro = enemigoTransform.position;
+            posicionCentro.z = -0.1f; // Ligero offset Z para renderizar por delante
+
+            GameObject corteInstancia = Instantiate(prefabEfectoCorte, posicionCentro, Quaternion.Euler(0, 0, anguloCorte));
+
+            // Escalado adaptativo según el tamaño del enemigo
+            Vector3 escalaEnemigo = enemigoTransform.lossyScale;
+            float factorTamano = (Mathf.Abs(escalaEnemigo.x) + Mathf.Abs(escalaEnemigo.y)) * 2f;
+
+            corteInstancia.transform.localScale *= factorTamano;
+        }
+
+        // 2. CHORRO DE SANGRE (Nace en el punto exacto donde la boca mordió)
+        if (prefabSangreChorro != null)
+        {
+            Vector2 direccionContraria = -direccionMordisco;
+            float anguloSangre = Mathf.Atan2(direccionContraria.y, direccionContraria.x) * Mathf.Rad2Deg;
+            
+            Instantiate(prefabSangreChorro, puntoContacto, Quaternion.Euler(0, 0, anguloSangre));
+        }
     }
 
     private void AgarrarPez(IAgarrable agarrable, GameObject go)

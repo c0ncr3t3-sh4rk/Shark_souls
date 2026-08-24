@@ -140,7 +140,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -8.75, y: -0.39, z: 0}
-  m_LocalScale: {x: 0.46736863, y: 0.45745856, z: 0.46967}
+  m_LocalScale: {x: 0.81831574, y: 0.8009642, z: 0.8223452}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6365774841951736013}
@@ -427,7 +427,7 @@ MonoBehaviour:
   spriteMordisco: {fileID: 1178231847908404071, guid: cd49aae877d531d49b81fa663487e227, type: 3}
   danoMordisco: 1
   colliderBoca: {fileID: 2109743843802710890}
-  puntoBoca: {fileID: 0}
+  puntoBoca: {fileID: 6365774841951736013}
   girosParaBapuleo: 3
   tiempoMaximoEntreGiros: 0.3
   danoBapuleo: 2
@@ -437,6 +437,8 @@ MonoBehaviour:
   onMuerteBapuleo:
     m_PersistentCalls:
       m_Calls: []
+  prefabEfectoCorte: {fileID: 110048675258960550, guid: b80bb28a9781a752383992ea049fcdce, type: 3}
+  prefabSangreChorro: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
 --- !u!114 &4603606583405158769
 MonoBehaviour:
   m_ObjectHideFlags: 0

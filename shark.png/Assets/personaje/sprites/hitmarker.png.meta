@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 68da67f0ea09e880393698cc0566c862
+guid: 0e636fb8048bba014b9d0692b602221c
 TextureImporter:
   internalIDToNameTable:
   - first:
       213: -3456819443802960952
     second: hitmarker_0
+  - first:
+      213: 407602523924423663
+    second: hitmarker_1
+  - first:
+      213: 8033355300261946478
+    second: hitmarker_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -105,10 +111,10 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1151
-        height: 980
+        width: 1000
+        height: 1000
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -121,11 +127,55 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: hitmarker_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1000
+        height: 1000
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe36110065818a500800000000000000
+      internalID: 407602523924423663
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: hitmarker_2
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1000
+        height: 1000
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e646d9245163c7f60800000000000000
+      internalID: 8033355300261946478
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 8effe7088f7084b13975aa42cce6d74f
     internalID: 0
     vertices: []
     indices: 
@@ -136,6 +186,8 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       hitmarker_0: -3456819443802960952
+      hitmarker_1: 407602523924423663
+      hitmarker_2: 8033355300261946478
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
