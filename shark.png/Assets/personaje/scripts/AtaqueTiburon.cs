@@ -184,6 +184,21 @@ public class AtaqueTiburon : MonoBehaviour
         haMatado = false;
         if (estadoActual != EstadoBoca.Abierta) return;
 
+        //si es un boss nos lo saltamos todo y le hacemos daño directamente
+        IVidaBoss boss = collision.GetComponent<IVidaBoss>() ?? collision.GetComponentInParent<IVidaBoss>();
+
+        if (boss != null)
+        {
+            boss.RecibirDano(danoMordisco);
+
+            Debug.Log("[AtaqueTiburon] ¡Mordisco certero al Boss!");
+
+            CerrarBoca(EstadoBoca.Bloqueada);
+            estaOcupado = false;
+            return;
+        }
+
+        // 2. SI ES UN ENEMIGO COMÚN (Lógica con VidaEnemigo e IAgarrable)
         if (collision.gameObject.CompareTag("Enemigo") || collision.attachedRigidbody?.CompareTag("Enemigo") == true)
         {
             IAgarrable agarrable = collision.GetComponent<IAgarrable>() ?? collision.GetComponentInParent<IAgarrable>();

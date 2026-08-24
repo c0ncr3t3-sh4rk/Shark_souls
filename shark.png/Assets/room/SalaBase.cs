@@ -44,7 +44,7 @@ namespace SharkSouls.Dungeon
         
         [HideInInspector] public int dificultadAlCrear = 1;
 
-        private readonly List<GameObject> enemigosVivos = new List<GameObject>();
+        public readonly List<GameObject> enemigosVivos = new List<GameObject>();
         public int CantidadEnemigosVivos => enemigosVivos.Count;
         private bool puertasCerradas;
         private bool esperandoEntrada;
@@ -181,7 +181,7 @@ namespace SharkSouls.Dungeon
             }
         }
 
-        private void CerrarPuertas()
+        public void CerrarPuertas()
         {
             puertasCerradas = true;
             foreach (var conector in conectores)

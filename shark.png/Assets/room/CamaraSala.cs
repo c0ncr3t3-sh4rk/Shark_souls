@@ -10,6 +10,10 @@ public class CamaraSala : MonoBehaviour
     public float suavizado = 0.3f;
     public Vector3 offset = new Vector3(0, 0, -10f);
 
+    [Header("Bordes / Encierro del Boss")]
+    [Tooltip("Arrastra aquí el EdgeCollider2D de la cámara que encierra al jugador en las salas de Boss.")]
+    public EdgeCollider2D edgeColliderCamara;
+
     private SalaBase salaActual;
     private Vector3 velocidadReferencia = Vector3.zero;
     private Camera cam;
@@ -17,6 +21,15 @@ public class CamaraSala : MonoBehaviour
     private void Awake()
     {
         cam = GetComponent<Camera>();
+
+        // 🔒 APAGAR EL BORDEL DE LA CÁMARA NADA MÁS INICIAR
+        if (edgeColliderCamara == null)
+        {
+            edgeColliderCamara = GetComponent<EdgeCollider2D>();
+        }
+
+        ActivarColliderCamara(false);
+
         if (jugador == null)
         {
             GameObject p = GameObject.FindGameObjectWithTag("Player");
@@ -27,6 +40,21 @@ public class CamaraSala : MonoBehaviour
     public void FijarSalaActual(SalaBase nuevaSala)
     {
         salaActual = nuevaSala;
+    }
+
+    public void ActivarColliderCamara(bool activar)
+    {
+        if (edgeColliderCamara == null)
+            edgeColliderCamara = GetComponent<EdgeCollider2D>();
+
+        if (edgeColliderCamara == null)
+        {
+            Debug.LogError("[CamaraSala] No se encontró el EdgeCollider2D de la cámara.");
+            return;
+        }
+
+        edgeColliderCamara.enabled = activar;
+        Debug.Log($"[CamaraSala] EdgeCollider2D {(activar ? "activado" : "desactivado")}. Estado: {edgeColliderCamara.enabled}");
     }
 
     private void LateUpdate()
@@ -42,7 +70,6 @@ public class CamaraSala : MonoBehaviour
 
         transform.position = Vector3.SmoothDamp(transform.position, posicionDeseada, ref velocidadReferencia, suavizado);
     }
-
 
     private Vector3 RestringirPosicionDentroDeBounds(Vector3 posicion, BoxCollider2D bounds)
     {
