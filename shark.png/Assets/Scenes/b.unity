@@ -3822,6 +3822,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4635173639803356472, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
+      propertyPath: prefabSangre
+      value: 
+      objectReference: {fileID: 6675009432846508976, guid: 84d4a7b158e43edecbea83a028c31b72, type: 3}
     - target: {fileID: 4859244417903913733, guid: 0917750ee3cdb1b408f7b3f5f2d7dc19, type: 3}
       propertyPath: efectoPantalla
       value: 
