@@ -20,6 +20,9 @@ public class VidaEnemigo : MonoBehaviour
     public int VidaActual => vidaActual;
     public int VidaMaxima => vidaMaxima;
 
+    [Header("Efectos de muerte")]
+    [SerializeField] private GameObject efectoMuerte;
+
     public SharkSouls.Dungeon.SalaBase salaAsignada;
     [HideInInspector] public int costePresupuesto;
     [HideInInspector] public GameObject prefabOrigen;
@@ -75,6 +78,12 @@ public class VidaEnemigo : MonoBehaviour
 
     public void Morir(TipoMuerte tipoMuerte)
     {
+        if (efectoMuerte != null)
+        {
+            GameObject efectoMuerte = Instantiate(this.efectoMuerte, transform.position, Quaternion.identity);
+            Destroy(efectoMuerte, 30f);
+        }
+
         if (Combo.Instancia != null)
             Combo.Instancia.Kill();
         
