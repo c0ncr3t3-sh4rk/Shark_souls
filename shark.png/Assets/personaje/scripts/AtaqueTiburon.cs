@@ -32,7 +32,7 @@ public class AtaqueTiburon : MonoBehaviour
 
     [Header("FX Gore / Sangre")]
     [SerializeField] private GameObject prefabEfectoCorte;  // Prefab del Tajo/Garra estilo Hollow Knight
-    [SerializeField] private GameObject prefabSangreChorro; // Prefab de las partículas de sangre
+    [SerializeField] private GameObject prefabSangre; // Prefab de las partículas de sangre
 
     private SpriteRenderer spriteRenderer;
     public static bool estaOcupado = false;
@@ -171,10 +171,10 @@ public class AtaqueTiburon : MonoBehaviour
 
         if (enemigo != null)
         {
-            enemigo.RecibirDano(danoBapuleo, VidaEnemigo.TipoMuerte.Bapuleo);
-            
             Vector2 dirRandom = Random.insideUnitCircle.normalized;
             GenerarEfectosImpacto(pezAgarradoGO.transform.position, dirRandom, enemigo.transform);
+
+            enemigo.RecibirDano(danoBapuleo, VidaEnemigo.TipoMuerte.Bapuleo);
 
             onGolpeBapuleo?.Invoke();
 
@@ -204,10 +204,10 @@ public class AtaqueTiburon : MonoBehaviour
 
         if (boss != null)
         {
-            boss.RecibirDano(danoMordisco);
-
             Vector3 posicionBoss = ((MonoBehaviour)boss)?.transform.position ?? collision.transform.position;
             GenerarEfectosImpacto(posicionBoss, direccionAtaque, ((MonoBehaviour)boss)?.transform);
+
+            boss.RecibirDano(danoMordisco);
 
             Debug.Log("[AtaqueTiburon] ¡Mordisco certero al Boss!");
 
@@ -217,42 +217,44 @@ public class AtaqueTiburon : MonoBehaviour
         }
 
         // 2. SI ES UN ENEMIGO COMÚN
-        if (collision.gameObject.CompareTag("Enemigo") || collision.attachedRigidbody?.CompareTag("Enemigo") == true)
+        VidaEnemigo enemigo = collision.GetComponent<VidaEnemigo>() ?? collision.GetComponentInParent<VidaEnemigo>();
+        if (enemigo != null)
         {
             IAgarrable agarrable = collision.GetComponent<IAgarrable>() ?? collision.GetComponentInParent<IAgarrable>();
-            VidaEnemigo enemigo = collision.GetComponent<VidaEnemigo>() ?? collision.GetComponentInParent<VidaEnemigo>();
             SaludTiburon saludJugador = GetComponent<SaludTiburon>() ?? GetComponentInParent<SaludTiburon>();
 
-            if (enemigo != null)
+            // Crear el efecto antes del daño: el enemigo puede desactivarse al morir.
+            GenerarEfectosImpacto(enemigo.transform.position, direccionAtaque, enemigo.transform);
+            haMatado = enemigo.RecibirDano(danoMordisco, VidaEnemigo.TipoMuerte.Mordisco);
+
+            if (haMatado)
             {
-                haMatado = enemigo.RecibirDano(danoMordisco, VidaEnemigo.TipoMuerte.Mordisco);
-
-                // Los dos efectos parten del mismo punto del enemigo.
-                GenerarEfectosImpacto(enemigo.transform.position, direccionAtaque, enemigo.transform);
-
-                if (haMatado)
+                if (Random.Range(0f, 1f) < 1f)
                 {
-                    if (Random.Range(0f, 1f) < 1f)
-                    {
-                        saludJugador.Curar(1);
-                    }
+                    saludJugador.Curar(1);
                 }
+            }
 
-                GameObject objetivoGO = (agarrable as MonoBehaviour)?.gameObject ?? collision.gameObject;
+            GameObject objetivoGO = (agarrable as MonoBehaviour)?.gameObject ?? collision.gameObject;
 
-                if (agarrable != null && objetivoGO.activeInHierarchy)
-                {
-                    AgarrarPez(agarrable, objetivoGO);
-                    estadoActual = EstadoBoca.Presa;
-                    colliderBoca.enabled = false;
-                }
-                else
-                {
-                    CerrarBoca(EstadoBoca.Bloqueada);
-                }
+            if (agarrable != null && objetivoGO.activeInHierarchy)
+            {
+                AgarrarPez(agarrable, objetivoGO);
+                estadoActual = EstadoBoca.Presa;
+                colliderBoca.enabled = false;
+            }
+            else
+            {
+                CerrarBoca(EstadoBoca.Bloqueada);
             }
         }
         estaOcupado = false;
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (estadoActual == EstadoBoca.Abierta)
+            OnTriggerEnter2D(collision);
     }
 
     private void GenerarEfectosImpacto(Vector3 posicionImpacto, Vector2 direccionMordisco, Transform objetivo)
@@ -262,7 +264,6 @@ public class AtaqueTiburon : MonoBehaviour
 
         direccionMordisco.Normalize();
 
-        // 1. TAJO ESTILO HOLLOW KNIGHT
         if (prefabEfectoCorte != null)
         {
             float anguloCorte = Mathf.Atan2(direccionMordisco.y, direccionMordisco.x) * Mathf.Rad2Deg;
@@ -271,12 +272,11 @@ public class AtaqueTiburon : MonoBehaviour
             Instantiate(prefabEfectoCorte, posicionImpacto, Quaternion.Euler(0, 0, anguloCorte));
         }
 
-        // 2. CHORRO DE SANGRE (Nace en el punto exacto donde la boca mordió)
-        if (prefabSangreChorro != null)
+        if (prefabSangre != null)
         {
             float anguloSangre = Random.Range(0f, 360f) - 90f;
             
-            GameObject sangreInstancia = Instantiate(prefabSangreChorro, posicionImpacto, Quaternion.Euler(0, 0, anguloSangre));
+            GameObject sangreInstancia = Instantiate(prefabSangre, posicionImpacto, Quaternion.Euler(0, 0, anguloSangre));
             if (objetivo != null)
                 sangreInstancia.transform.SetParent(objetivo, true);
         }
