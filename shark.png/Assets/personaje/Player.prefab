@@ -351,10 +351,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaludTiburon
   vidasMaximas: 10
-  contenedorCorazones: {fileID: 0}
+  contenedorCorazones: {fileID: 2705906123396467803, guid: 10b0bf651533eaaed9be5530191cdfc3, type: 3}
   corazonPrefab: {fileID: 7358474754684837988, guid: adf184d20f55a514c9dd4f759754200a, type: 3}
   duracionInvencibilidad: 1.5
-  pantallaRoja: {fileID: 0}
+  pantallaRoja: {fileID: 547855972806785038, guid: 19b1874c24a234592827ce32974d5cbf, type: 3}
   esInvencible: 0
 --- !u!114 &4612731977392342304
 MonoBehaviour:
@@ -407,7 +407,7 @@ MonoBehaviour:
   spriteParry: {fileID: 3633334342656139, guid: 8522328cf60b68b49839c69f8bb69b2c, type: 3}
   duracionParry: 0.4
   colliderParry: {fileID: 6155694928812476400}
-  efectoPantalla: {fileID: 0}
+  efectoPantalla: {fileID: 2647687840687204551, guid: 97995a8c8fbdb3458b550d7edde9d598, type: 3}
   duracionEfectoPantalla: 0.5
   sonidoParry: {fileID: 8300000, guid: 0c0fa9b04e7d04943a297e5e5275102b, type: 3}
 --- !u!114 &4635173639803356472
@@ -438,7 +438,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   prefabEfectoCorte: {fileID: 110048675258960550, guid: b80bb28a9781a752383992ea049fcdce, type: 3}
-  prefabSangreChorro: {fileID: 8619229459975987143, guid: 05c3d73b53c809341a31aa690263e138, type: 3}
+  prefabSangreChorro: {fileID: 6675009432846508976, guid: 84d4a7b158e43edecbea83a028c31b72, type: 3}
 --- !u!114 &4603606583405158769
 MonoBehaviour:
   m_ObjectHideFlags: 0

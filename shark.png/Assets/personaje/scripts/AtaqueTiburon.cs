@@ -173,9 +173,8 @@ public class AtaqueTiburon : MonoBehaviour
         {
             enemigo.RecibirDano(danoBapuleo, VidaEnemigo.TipoMuerte.Bapuleo);
             
-            // 🩸 SANGRE EN EL BAPULEO (Corregido: pasa transform, punto de contacto y dirección)
             Vector2 dirRandom = Random.insideUnitCircle.normalized;
-            GenerarEfectosImpacto(pezAgarradoGO.transform, pezAgarradoGO.transform.position, dirRandom);
+            GenerarEfectosImpacto(pezAgarradoGO.transform.position, dirRandom, enemigo.transform);
 
             onGolpeBapuleo?.Invoke();
 
@@ -207,8 +206,8 @@ public class AtaqueTiburon : MonoBehaviour
         {
             boss.RecibirDano(danoMordisco);
 
-            // 🩸 EFECTOS: Centrado en el Boss, ajustado a su tamaño y con sangre desde el impacto
-            GenerarEfectosImpacto(collision.transform, puntoContacto, direccionAtaque);
+            Vector3 posicionBoss = ((MonoBehaviour)boss)?.transform.position ?? collision.transform.position;
+            GenerarEfectosImpacto(posicionBoss, direccionAtaque, ((MonoBehaviour)boss)?.transform);
 
             Debug.Log("[AtaqueTiburon] ¡Mordisco certero al Boss!");
 
@@ -228,8 +227,8 @@ public class AtaqueTiburon : MonoBehaviour
             {
                 haMatado = enemigo.RecibirDano(danoMordisco, VidaEnemigo.TipoMuerte.Mordisco);
 
-                // 🩸 EFECTOS: Centrado en el enemigo común
-                GenerarEfectosImpacto(collision.transform, puntoContacto, direccionAtaque);
+                // Los dos efectos parten del mismo punto del enemigo.
+                GenerarEfectosImpacto(enemigo.transform.position, direccionAtaque, enemigo.transform);
 
                 if (haMatado)
                 {
@@ -256,38 +255,30 @@ public class AtaqueTiburon : MonoBehaviour
         estaOcupado = false;
     }
 
-    /// <summary>
-    /// Instancia el tajo en el CENTRO del enemigo (escalado a su tamaño) 
-    /// y el chorro de sangre saliendo desde el punto de contacto.
-    /// </summary>
-    private void GenerarEfectosImpacto(Transform enemigoTransform, Vector2 puntoContacto, Vector2 direccionMordisco)
+    private void GenerarEfectosImpacto(Vector3 posicionImpacto, Vector2 direccionMordisco, Transform objetivo)
     {
-        if (enemigoTransform == null) return;
+        if (direccionMordisco.sqrMagnitude < 0.001f)
+            direccionMordisco = Vector2.right;
 
-        // 1. TAJO ESTILO HOLLOW KNIGHT (Centrado y escalado al enemigo/boss)
+        direccionMordisco.Normalize();
+
+        // 1. TAJO ESTILO HOLLOW KNIGHT
         if (prefabEfectoCorte != null)
         {
             float anguloCorte = Mathf.Atan2(direccionMordisco.y, direccionMordisco.x) * Mathf.Rad2Deg;
-            
-            Vector3 posicionCentro = enemigoTransform.position;
-            posicionCentro.z = -0.1f; // Ligero offset Z para renderizar por delante
 
-            GameObject corteInstancia = Instantiate(prefabEfectoCorte, posicionCentro, Quaternion.Euler(0, 0, anguloCorte));
-
-            // Escalado adaptativo según el tamaño del enemigo
-            Vector3 escalaEnemigo = enemigoTransform.lossyScale;
-            float factorTamano = (Mathf.Abs(escalaEnemigo.x) + Mathf.Abs(escalaEnemigo.y)) * 2f;
-
-            corteInstancia.transform.localScale *= factorTamano;
+            posicionImpacto.z = -0.1f;
+            Instantiate(prefabEfectoCorte, posicionImpacto, Quaternion.Euler(0, 0, anguloCorte));
         }
 
         // 2. CHORRO DE SANGRE (Nace en el punto exacto donde la boca mordió)
         if (prefabSangreChorro != null)
         {
-            Vector2 direccionContraria = -direccionMordisco;
-            float anguloSangre = Mathf.Atan2(direccionContraria.y, direccionContraria.x) * Mathf.Rad2Deg;
+            float anguloSangre = Random.Range(0f, 360f) - 90f;
             
-            Instantiate(prefabSangreChorro, puntoContacto, Quaternion.Euler(0, 0, anguloSangre));
+            GameObject sangreInstancia = Instantiate(prefabSangreChorro, posicionImpacto, Quaternion.Euler(0, 0, anguloSangre));
+            if (objetivo != null)
+                sangreInstancia.transform.SetParent(objetivo, true);
         }
     }
 

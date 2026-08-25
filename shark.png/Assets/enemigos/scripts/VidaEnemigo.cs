@@ -20,9 +20,6 @@ public class VidaEnemigo : MonoBehaviour
     public int VidaActual => vidaActual;
     public int VidaMaxima => vidaMaxima;
 
-    [Header("Visuales")]
-    [SerializeField] private GameObject sangre;
-    [SerializeField] private GameObject sangreMuerte;
     public SharkSouls.Dungeon.SalaBase salaAsignada;
     [HideInInspector] public int costePresupuesto;
     [HideInInspector] public GameObject prefabOrigen;
@@ -47,12 +44,6 @@ public class VidaEnemigo : MonoBehaviour
 
         if (Combo.Instancia != null)
             Combo.Instancia.Hit();
-
-        if (sangre != null)
-        {
-            GameObject objSangre = Instantiate(sangre, transform.position, Quaternion.identity);
-            Destroy(objSangre, 1f); 
-        }
 
         if (sr != null)
             StartCoroutine(EfectoDano());
@@ -84,12 +75,6 @@ public class VidaEnemigo : MonoBehaviour
 
     public void Morir(TipoMuerte tipoMuerte)
     {
-        if (sangreMuerte != null)
-        {
-            GameObject objSangre = Instantiate(sangreMuerte, transform.position, Quaternion.identity);
-            Destroy(objSangre, 1f); 
-        }
-
         if (Combo.Instancia != null)
             Combo.Instancia.Kill();
         
