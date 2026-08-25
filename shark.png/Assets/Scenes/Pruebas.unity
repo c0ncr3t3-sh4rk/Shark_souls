@@ -247,8 +247,12 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1448305433300946067, guid: ac8c76782b818b6408d716edc6e35048, type: 3}
       propertyPath: vidaMaxima
-      value: 5432432
+      value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 1448305433300946067, guid: ac8c76782b818b6408d716edc6e35048, type: 3}
+      propertyPath: efectoMuerte
+      value: 
+      objectReference: {fileID: 6675009432846508976, guid: 13387dcc0be068608ab7eca83dfd8d7b, type: 3}
     - target: {fileID: 1759840574820396210, guid: ac8c76782b818b6408d716edc6e35048, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.176

@@ -81,7 +81,6 @@ public class VidaEnemigo : MonoBehaviour
         if (efectoMuerte != null)
         {
             GameObject efectoMuerte = Instantiate(this.efectoMuerte, transform.position, Quaternion.identity);
-            Destroy(efectoMuerte, 30f);
         }
 
         if (Combo.Instancia != null)
