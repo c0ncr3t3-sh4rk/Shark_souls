@@ -2780,9 +2780,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SharkSouls.Dungeon.SalaBossTrigger
   salaPadre: {fileID: 4840183584750537296}
   boundsOriginales: {fileID: 5959456063398302615}
-  prefabBoss: {fileID: 4083306669410988412, guid: 8cc8be0a70033e964874cdca2ea7cb85, type: 3}
-  puntoSpawnBoss: {fileID: 6996458654368715591}
-  margenActivacion: 3
 --- !u!1 &3619973840003690871
 GameObject:
   m_ObjectHideFlags: 0
@@ -2932,6 +2929,7 @@ GameObject:
   - component: {fileID: 6309178473419433090}
   - component: {fileID: 4840183584750537296}
   - component: {fileID: 5959456063398302615}
+  - component: {fileID: 2464023867084166182}
   m_Layer: 12
   m_Name: SalaBossMako
   m_TagString: Untagged
@@ -3075,6 +3073,22 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 39.920647, y: 20.024296}
   m_EdgeRadius: 0
+--- !u!114 &2464023867084166182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3815245210509088910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1baa36bc725dc92dbb8a515c2cd968a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossUtils
+  tagPuntosReferencia: PuntosReferenciaMako
+  umbralEsquinaX: 16
+  umbralEsquinaY: 6
+  umbralLateral: 9
 --- !u!1 &3906556986928189976
 GameObject:
   m_ObjectHideFlags: 0

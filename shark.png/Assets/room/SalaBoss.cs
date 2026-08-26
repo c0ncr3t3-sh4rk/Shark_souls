@@ -6,129 +6,79 @@ namespace SharkSouls.Dungeon
     public class SalaBossTrigger : MonoBehaviour
     {
         [Header("Referencias de la Sala")]
-        public SalaBase salaPadre;                   // Script SalaBase del padre
-        public BoxCollider2D boundsOriginales;      // Collider normal de la sala (opcional)
-
-        [Header("Configuración del Boss")]
-        public GameObject prefabBoss;               // Prefab del Marrajo
-        public Transform puntoSpawnBoss;            // Punto de aparición
-        [Min(0f)] public float margenActivacion = 1.5f;
+        public SalaBase salaPadre;                  // Script SalaBase del padre
+        public BoxCollider2D boundsOriginales;      // Collider normal de la sala
+        private BoxCollider2D boundsBoss;           // Este mismo collider actúa como los límites de la pantalla fija
 
         private bool combateIniciado = false;
-        private bool bossSpawneado = false;
-        private GameObject bossInstanciado;
-        private BoxCollider2D miColliderPantallaFija;
         private CamaraSala camaraSala;
+        private BossMako bossActual;
 
         private void Awake()
         {
-            miColliderPantallaFija = GetComponent<BoxCollider2D>();
+            boundsBoss = GetComponent<BoxCollider2D>();
 
-            if (salaPadre == null)
+            if (salaPadre == null) // si no esta pos lo busca y tall
             {
                 salaPadre = GetComponentInParent<SalaBase>();
             }
 
+            if (salaPadre != null && salaPadre.GetComponent<BossUtils>() == null) // si no tiene pos se lo pone, aqui hay capas de chapuza pero a quien le importa ya
+            {
+                salaPadre.gameObject.AddComponent<BossUtils>();
+            }
+
             camaraSala = FindFirstObjectByType<CamaraSala>();
+
+            // El Boss debe estar colocado como hijo de la sala.
+            bossActual = salaPadre != null
+                ? salaPadre.GetComponentInChildren<BossMako>(true)
+                : GetComponentInChildren<BossMako>(true);
         }
 
-        private void OnTriggerStay2D(Collider2D other)
+        private void OnTriggerEnter2D(Collider2D other)
         {
             if (combateIniciado || !other.CompareTag("Player")) return;
 
-            Bounds limites = miColliderPantallaFija != null
-                ? miColliderPantallaFija.bounds
-                : GetComponent<Collider2D>().bounds;
-            Vector2 centroJugador = other.bounds.center;
-
-            bool dentroX = centroJugador.x > limites.min.x + margenActivacion &&
-                           centroJugador.x < limites.max.x - margenActivacion;
-            bool dentroY = centroJugador.y > limites.min.y + margenActivacion &&
-                           centroJugador.y < limites.max.y - margenActivacion;
-
-            if (dentroX && dentroY)
-                IniciarCombate();
+            IniciarCombate();
         }
 
         private void IniciarCombate()
         {
             combateIniciado = true;
-            Debug.Log("[BossBounds] ¡Jugador dentro! Activando EdgeCollider y congelando cámara.");
 
-            // 1. ACTIVAR EL EDGE COLLIDER DESDE LA CÁMARA
-            if (camaraSala != null)
-                camaraSala.ActivarColliderCamara(true);
-            else
-                Debug.LogError("[BossBounds] No se encontró CamaraSala.");
+            // Confinamiento (jaja) de Cámara y Cierre de Puertas
+            camaraSala.ActivarColliderCamara(true);
 
-            if (salaPadre != null)
-            {
-                if (boundsOriginales == null)
-                {
-                    boundsOriginales = salaPadre.boundsCamara;
-                }
+            if (boundsOriginales == null)
+                boundsOriginales = salaPadre.boundsCamara;
 
-                // 2. FIJAR CÁMARA Y CERRAR PUERTAS
-                if (miColliderPantallaFija != null)
-                {
-                    salaPadre.boundsCamara = miColliderPantallaFija;
-                }
-                salaPadre.CerrarPuertas();
-            }
+            salaPadre.boundsCamara = boundsBoss;
 
-            // 3. SPAWNEAR AL BOSS
-            if (prefabBoss != null && puntoSpawnBoss != null)
-            {
-                bossInstanciado = Instantiate(prefabBoss, puntoSpawnBoss.position, puntoSpawnBoss.rotation);
-                bossSpawneado = true;
+            salaPadre.CerrarPuertas();
 
-                if (salaPadre != null)
-                    bossInstanciado.transform.SetParent(salaPadre.transform);
-            }
-            else
-            {
-                Debug.LogError("[BossBounds] No se puede iniciar el boss: falta prefabBoss o puntoSpawnBoss.");
-            }
+            // Activar el Boss y suscribirnos a su evento de muerte
+            bossActual.OnBossMuerto += FinalizarCombate;
+            bossActual.IniciarCombate();
         }
 
-        private void Update()
+        private void FinalizarCombate()
         {
-            if (!combateIniciado) return;
+            bossActual.OnBossMuerto -= FinalizarCombate;
 
-            // Detección de Muerte del Boss
-            if (bossSpawneado && bossInstanciado == null)
+            camaraSala.ActivarColliderCamara(false);
+
+            // 2. Restaurar cámara, abrir puertas y soltar la recompensa
+            salaPadre.boundsCamara = boundsOriginales;
+
+            salaPadre.salaCompletada = true;
+            salaPadre.AbrirPuertas();
+
+            GeneradorMazmorra mazmorra = FindFirstObjectByType<GeneradorMazmorra>();
+            if (mazmorra != null)
             {
-                FinalizarCombateYCompletarSala();
-            }
-        }
-
-        private void FinalizarCombateYCompletarSala()
-        {
-            Debug.Log("[BossBounds] ¡Boss muerto! Desactivando EdgeCollider y liberando puertas.");
-
-            // 1. DESACTIVAR EL EDGE COLLIDER DESDE LA CÁMARA
-            if (camaraSala != null)
-                camaraSala.ActivarColliderCamara(false);
-
-            if (salaPadre != null)
-            {
-                if (boundsOriginales != null)
-                {
-                    salaPadre.boundsCamara = boundsOriginales;
-                }
-
-                salaPadre.salaCompletada = true;
-                salaPadre.AbrirPuertas();
-
-                GeneradorMazmorra mazmorra = FindFirstObjectByType<GeneradorMazmorra>();
-                if (mazmorra != null)
-                {
-                    if (mazmorra.prefabTragaperras != null)
-                    {
-                        Instantiate(mazmorra.prefabTragaperras, salaPadre.transform.position, Quaternion.identity);
-                    }
-                    mazmorra.SalaCompletadaCallback();
-                }
+                Instantiate(mazmorra.prefabTragaperras, salaPadre.transform.position, Quaternion.identity);
+                mazmorra.SalaCompletadaCallback();
             }
 
             this.enabled = false;

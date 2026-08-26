@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using UnityEngine;
 
 public enum EstadoMarrajo
@@ -12,21 +13,6 @@ public enum EstadoMarrajo
     Cuadricula
 }
 
-// Cada punto tiene una posición y un array de direcciones válidas para embestir desde ese punto
-[System.Serializable]
-public class PuntoEmbestida
-{
-    public Transform _punto;
-    public Vector2[] _direcciones; 
-
-    // Constructor para poder instanciarlo con "new"
-    public PuntoEmbestida(Transform punto, Vector2[] direcciones)
-    {
-        _punto = punto;
-        _direcciones = direcciones;
-    }
-}
-
 public class BossMako : MonoBehaviour, IVidaBoss
 {
     [Header("Vida")]
@@ -37,28 +23,19 @@ public class BossMako : MonoBehaviour, IVidaBoss
     public float velocidadEmbestidaLarga = 25f;
     public float danoEmbestidaLarga = 2f;
     private int nEmbestidas = 0;
-    public int nEmbestidasMaximas = 3;
 
-    [Header("Embestida Explosiva")]
-    public float velocidadEmbestidaExplosiva = 20f;
+    [Header("Embestida Rápida (Explosiva / Directa)")]
+    public float velocidadEmbestidaExplosiva = 50f;
     public float danoEmbestidaExplosiva = 3f;
-    public float danoExplosiones = 5f;
 
     [Header("Sierra")]
     public GameObject hitboxSierra;
     public float danoSierra = 1f;
     public float tiempoSierra = 2f;
     public float velocidadRotacionSierra = 3240f;
-    [SerializeField] private Transform spriteTransform;
-
-    [Header("Corte en V")]
-    public float danoCorteV = 2f;
-    public float velocidadCorteV = 20f;
-    public int nCortes = 5;
 
     [Header("Salida de Pantalla")]
     public float velocidadSalida = 30f;
-    public float distanciaFueraCamara = 12f;
 
     public LineRenderer lineaTelegrafiado;
 
@@ -68,14 +45,27 @@ public class BossMako : MonoBehaviour, IVidaBoss
     public EstadoMarrajo estadoActual;
     public int faseActual = 1;
     private PuntoEmbestida[] puntosDeEntrada;
+    private BossUtils bossUtils;
+    private Coroutine bucleIA;
+    private bool muerteNotificada;
     public GameObject colisionPared;
     public float tiempoFrenazo = 1f;
-    private bool StunAcabado = false;
+
+    public event Action OnBossMuerto;
+
+    private bool enStun = false;
+    private bool haChocadoPared = false;
+    private SpriteRenderer spriteRenderer;
+
+    private EstadoMarrajo estadoAnterior = EstadoMarrajo.FueraDeCamara;
+    private EstadoMarrajo estadoSiguiente;
+    private int nMismoAtaque = 0;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        colisionPared.SetActive(false);
+        if (colisionPared != null) colisionPared.SetActive(false);
+        spriteRenderer = GetComponent<SpriteRenderer>();
 
         if (jugador == null)
         {
@@ -87,146 +77,79 @@ public class BossMako : MonoBehaviour, IVidaBoss
 
         if (hitboxSierra != null) hitboxSierra.SetActive(false);
 
-        CargarPuntosReferencia();
-    }
-
-    private void CargarPuntosReferencia()
-    {
-        GameObject[] totalPuntos = GameObject.FindGameObjectsWithTag("PuntosReferenciaMako");
-        
-        if (totalPuntos.Length == 0) return;
-
-        puntosDeEntrada = new PuntoEmbestida[totalPuntos.Length];
-
-        // Sacamos la media de todos los puntos para tener un centro de referencia
-        Vector3 centroSala = Vector3.zero;
-        foreach (GameObject obj in totalPuntos)
-        {
-            centroSala += obj.transform.position;
-        }
-        centroSala /= totalPuntos.Length;
-
-        // Calculamos las direcciones válidas para cada punto según su posición relativa al centro
-        for (int i = 0; i < totalPuntos.Length; i++)
-        {
-            Transform PosicionP = totalPuntos[i].transform;
-            Vector2[] dirsPosibles = CalcularDireccionesSegunPosicion(PosicionP.position, centroSala);
-
-            puntosDeEntrada[i] = new PuntoEmbestida(PosicionP, dirsPosibles);
-        }
-    }
-
-    private Vector2[] CalcularDireccionesSegunPosicion(Vector3 pos, Vector3 centroSala)
-    {
-        Vector2 dif = pos - centroSala;
-
-        // --- ESQUINAS ---
-        if (dif.x < -16f && dif.y > 6f)
-        {
-            return new Vector2[] { new Vector2(1f, -1f).normalized }; // Abajo-Derecha
-        }
-        else if (dif.x > 16f && dif.y > 6f)
-        {
-            return new Vector2[] { new Vector2(-1f, -1f).normalized }; // Abajo-Izquierda
-        }
-        else if (dif.x < -16f && dif.y < -6f)
-        {
-            return new Vector2[] { new Vector2(1f, 1f).normalized }; // Arriba-Derecha
-        }
-        else if (dif.x > 16f && dif.y < -6f)
-        {
-            return new Vector2[] { new Vector2(-1f, 1f).normalized }; // Arriba-Izquierda
-        }
-
-        // --- LADOS LATERALES ---
-        else if (dif.x < -16f)
-        {
-            return new Vector2[] { Vector2.right }; // Derecha
-        }
-        else if (dif.x > 16f)
-        {
-            return new Vector2[] { Vector2.left }; // Izquierda
-        }
-
-        // --- LADOS INTERMEDIOS ---
-        else if (dif.x > 9f && dif.y > 0f) // (Derecha-Arriba)
-        {
-            return new Vector2[] { 
-                Vector2.down, 
-                new Vector2(-1f, -1f).normalized // Diagonal Abajo-Izquierda
-            };
-        }
-        else if (dif.x > 9f && dif.y < 0f) // (Derecha-Abajo)
-        {
-            return new Vector2[] { 
-                Vector2.up, 
-                new Vector2(-1f, 1f).normalized // Diagonal Arriba-Izquierda
-            };
-        } 
-        else if (dif.x < -9f && dif.y > 0f) // (Izquierda-Arriba)
-        {
-            return new Vector2[] {
-                Vector2.down,
-                new Vector2(1f, -1f).normalized // Diagonal Abajo-Derecha
-            };
-        } 
-        else if (dif.x < -9f && dif.y < 0f) // (Izquierda-Abajo)
-        {
-            return new Vector2[] {
-                Vector2.up,
-                new Vector2(1f, 1f).normalized // Diagonal Arriba-Derecha
-            };
-        } 
-
-        // --- TECHO Y SUELO CENTRO ---
-        else if (dif.y > 0f) // Techo
-        {
-            return new Vector2[] { 
-                Vector2.down,
-                new Vector2(1f, -1f).normalized,
-                new Vector2(-1f, -1f).normalized
-            };
-        } 
-        else // Suelo
-        {
-            return new Vector2[] { 
-                Vector2.up,
-                new Vector2(1f, 1f).normalized,
-                new Vector2(-1f, 1f).normalized
-            };
-        }
+        bossUtils = GetComponentInParent<BossUtils>();
+        if (bossUtils != null)
+            puntosDeEntrada = bossUtils.GetPuntosEmbestida();
     }
 
     private void Start()
     {
-        StartCoroutine(BucleIA());
+        if (bossUtils == null)
+        {
+            bossUtils = GetComponentInParent<BossUtils>();
+            if (bossUtils != null)
+                puntosDeEntrada = bossUtils.GetPuntosEmbestida();
+        }
+    }
+
+    public void IniciarCombate()
+    {
+        if (bucleIA == null && vidaActual > 0)
+            bucleIA = StartCoroutine(BucleIA());
     }
 
     private IEnumerator BucleIA()
     {
         while (vidaActual > 0)
         {
-            // --- FASE 1 ---
             if (faseActual == 1)
             {
-                float rand = Random.value;
+                float rand = UnityEngine.Random.value;
                 float distancia = Vector2.Distance(transform.position, jugador.position);
 
-                if (distancia < 3f && rand < 0.7f)
+                // --- ATAQUE SIERRA (Cerca del jugador) ---
+                if (distancia < 4f && rand < 0.6f)
                 {
+                    nMismoAtaque = 0; // Reiniciamos el contador si hace sierra
                     yield return StartCoroutine(AtaqueSierra());
                 }
-                else if (distancia < 4f && rand < 0.5f)
+                // --- EMBESTIDA EXPLOSIVA ---
+                else if (rand < 0.4f)
                 {
-                    yield return StartCoroutine(AtaqueEmbestidaexplosiva());
+                    if (estadoActual == EstadoMarrajo.EmbestidaExplosivo)
+                        nMismoAtaque++;
+                    else 
+                        nMismoAtaque = 1;
+
+                    // Si se ha repetido demasiado, forzamos la Embestida Larga
+                    if (nMismoAtaque > 2)
+                    {
+                        nMismoAtaque = 1;
+                        yield return StartCoroutine(AtaqueEmbestidaLarga());
+                    }
+                    else
+                    {
+                        yield return StartCoroutine(AtaqueEmbestidaexplosiva());
+                    }
                 }
-                else if (rand < 1f)
-                {
-                    yield return StartCoroutine(AtaqueEmbestidaLarga());
-                }
+                // --- EMBESTIDA LARGA ---
                 else
                 {
-                    yield return StartCoroutine(AtaqueCorteV());
+                    if (estadoActual == EstadoMarrajo.EmbestidaLarga)
+                        nMismoAtaque++;
+                    else 
+                        nMismoAtaque = 1;
+
+                    // Si se ha repetido demasiado, forzamos la Embestida Explosiva
+                    if (nMismoAtaque > 2)
+                    {
+                        nMismoAtaque = 1;
+                        yield return StartCoroutine(AtaqueEmbestidaexplosiva());
+                    }
+                    else
+                    {
+                        yield return StartCoroutine(AtaqueEmbestidaLarga());
+                    }
                 }
             }
             else if (faseActual == 2)
@@ -237,12 +160,14 @@ public class BossMako : MonoBehaviour, IVidaBoss
             {
                 yield return null;
             }
+
+            // Pequeña pausa entre decisiones de la IA para dar un respiro visual
+            yield return new WaitForSeconds(0.2f);
         }
 
         Morir();
     }
 
-    // --- MÉTODO SALIR DE PANTALLA ---
     private IEnumerator SalirDePantalla()
     {
         estadoActual = EstadoMarrajo.FueraDeCamara;
@@ -255,7 +180,7 @@ public class BossMako : MonoBehaviour, IVidaBoss
         float anchoCamara = cam.orthographicSize * cam.aspect;
         Vector3 centroCamara = cam.transform.position;
 
-        float margen = 3f; 
+        float margen = 4f; 
 
         while (Mathf.Abs(transform.position.x - centroCamara.x) < (anchoCamara + margen) &&
             Mathf.Abs(transform.position.y - centroCamara.y) < (altoCamara + margen))
@@ -266,20 +191,16 @@ public class BossMako : MonoBehaviour, IVidaBoss
         }
 
         rb.linearVelocity = Vector2.zero; 
-        Debug.Log("[Boss] El Mako ha salido completamente de la pantalla.");
     }
 
-    // --- MÉTODOS DE ATAQUE ---
     private IEnumerator AtaqueSierra()
     {
         estadoActual = EstadoMarrajo.Sierra;
-        Debug.Log("[Boss] ¡Ejecutando Ataque Sierra!");
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(0.6f);
         
         if (hitboxSierra != null) hitboxSierra.SetActive(true);
 
         float T = 0f;
-
         while (T < tiempoSierra)
         {
             transform.Rotate(0f, 0f, velocidadRotacionSierra * Time.deltaTime);
@@ -293,37 +214,67 @@ public class BossMako : MonoBehaviour, IVidaBoss
 
     private IEnumerator AtaqueEmbestidaexplosiva()
     {
-        estadoActual = EstadoMarrajo.EmbestidaExplosivo;
-        Debug.Log("[Boss] ¡Ejecutando Embestida Explosiva!");
-        
-        yield return new WaitForSeconds(1f);
-        
-        yield return StartCoroutine(SalirDePantalla());
+        if (faseActual == 1)
+        {
+            estadoActual = EstadoMarrajo.EmbestidaExplosivo;
+            haChocadoPared = false;
+
+            Vector2 direccion = (jugador.position - transform.position).normalized;
+            GirarSprite(direccion);
+
+            if (lineaTelegrafiado != null)
+            {
+                lineaTelegrafiado.enabled = true;
+                lineaTelegrafiado.SetPosition(0, transform.position);
+                lineaTelegrafiado.SetPosition(1, (Vector2)transform.position + (direccion * 8f));
+            }
+            yield return new WaitForSeconds(0.4f);
+            if (lineaTelegrafiado != null) lineaTelegrafiado.enabled = false;
+
+            StartCoroutine(ImagenesResiduales());
+
+            rb.linearVelocity = direccion * velocidadEmbestidaExplosiva;
+            if (colisionPared != null) colisionPared.SetActive(true);
+
+            // Avance con temporizador de seguridad por si no toca pared
+            float tMax = 1.2f;
+            float t = 0f;
+            while (!haChocadoPared && t < tMax)
+            {
+                t += Time.deltaTime;
+                yield return null;
+            }
+
+            if (!haChocadoPared)
+            {
+                rb.linearVelocity = Vector2.zero;
+                if (colisionPared != null) colisionPared.SetActive(false);
+            }
+            else
+            {
+                // Si choco, esperamos a que el Stun de OnTriggerEnter2D termine
+                while (enStun) yield return null;
+            }
+        }
     }
 
     private IEnumerator AtaqueEmbestidaLarga()
     {
-        if (faseActual == 1)
+        if (faseActual == 1 && puntosDeEntrada != null && puntosDeEntrada.Length > 0)
         {
             yield return StartCoroutine(SalirDePantalla());
 
             estadoActual = EstadoMarrajo.EmbestidaLarga;
-            Debug.Log("[Boss] ¡Ejecutando Embestida Larga!");
-
-            nEmbestidas = Random.Range(1, 4);
+            nEmbestidas = UnityEngine.Random.Range(1, 4);
 
             for (int i = 0; i < nEmbestidas; i++)
             {
-                // Elegimos un punto al azar
-                PuntoEmbestida P = puntosDeEntrada[Random.Range(0, puntosDeEntrada.Length)];
+                PuntoEmbestida P = puntosDeEntrada[UnityEngine.Random.Range(0, puntosDeEntrada.Length)];
+                transform.position = P.punto.position;
 
-                transform.position = P._punto.position; // Nos movemos al punto de referencia
-
-                Vector2 dirEmbestida = P._direcciones[Random.Range(0, P._direcciones.Length)]; // Elegimos una dirección válida al azar desde ese punto
-
+                Vector2 dirEmbestida = P.direcciones[UnityEngine.Random.Range(0, P.direcciones.Length)];
                 GirarSprite(dirEmbestida);
 
-                // Telegrafiado
                 if (lineaTelegrafiado != null)
                 {
                     lineaTelegrafiado.enabled = true;
@@ -331,16 +282,16 @@ public class BossMako : MonoBehaviour, IVidaBoss
                     lineaTelegrafiado.SetPosition(1, (Vector2)transform.position + (dirEmbestida * 40f));
                 }
 
-                yield return new WaitForSeconds(0.5f);
-
+                yield return new WaitForSeconds(0.4f);
                 if (lineaTelegrafiado != null) lineaTelegrafiado.enabled = false;
 
-                // Embestida
-                float tiempoPasada = 0f;
-                float duracionPasada = 1f;
+                StartCoroutine(ImagenesResiduales());
 
                 if (i < nEmbestidas - 1)
                 {
+                    float tiempoPasada = 0f;
+                    float duracionPasada = 0.8f;
+
                     while (tiempoPasada < duracionPasada)
                     {
                         rb.linearVelocity = dirEmbestida * velocidadEmbestidaLarga;
@@ -350,68 +301,77 @@ public class BossMako : MonoBehaviour, IVidaBoss
 
                     rb.linearVelocity = Vector2.zero;
                     yield return new WaitForSeconds(0.2f);
-                } else
+                } 
+                else
                 {
+                    // Última embestida -> Busca la pared
+                    haChocadoPared = false;
                     rb.linearVelocity = dirEmbestida * velocidadEmbestidaLarga;
-                    yield return new WaitForSeconds(0.3f);
+                    yield return new WaitForSeconds(0.2f); // da tiempo a entrar a la sala
 
-                    colisionPared.SetActive(true); //activamos la colision
+                    if (colisionPared != null) colisionPared.SetActive(true);
 
-                    while (!StunAcabado)
+                    // Espera con tiempo límite de 2.5s para evitar que se pille si no choca
+                    float tMax = 2.5f;
+                    float t = 0f;
+                    while (!haChocadoPared && t < tMax)
                     {
+                        t += Time.deltaTime;
                         yield return null;
                     }
+
+                    if (enStun)
+                    {
+                        while (enStun) yield return null;
+                    }
                 }
-                
             }
         }
     }
 
-    private IEnumerator AtaqueCorteV()
-    {
-        estadoActual = EstadoMarrajo.CorteV;
-        Debug.Log("[Boss] ¡Ejecutando Arpón en V!");
-        
-        yield return new WaitForSeconds(1f);
-        
-        yield return StartCoroutine(SalirDePantalla());
-    }
-
     private IEnumerator Frenazo()
     {
+        enStun = true;
         estadoActual = EstadoMarrajo.Frenazo;
-        colisionPared.SetActive(false);   // Apagamos la colisión
+        rb.linearVelocity = Vector2.zero;
+        if (colisionPared != null) colisionPared.SetActive(false);
 
-        Debug.Log("[Boss] ¡Incrustado en la pared! Stun iniciado.");
-
-        // Esperamos el tiempo de Stun
         yield return new WaitForSeconds(tiempoFrenazo);
 
-        Debug.Log("[Boss] Stun terminado. Volviendo a la acción.");
-        StunAcabado = true;
-        yield return new WaitForSeconds(0.5f); // Pequeño retraso para asegurar que el estado se actualice antes de continuar
-        StunAcabado = false;
+        transform.rotation = Quaternion.identity; // Se recoloca tras el aturdimiento
+        enStun = false;
+    }
+
+    private IEnumerator ImagenesResiduales()
+    {
+        while (estadoActual == EstadoMarrajo.EmbestidaLarga || estadoActual == EstadoMarrajo.EmbestidaExplosivo)
+        {
+            GameObject fantasma = new GameObject("EcoDash_Clon");
+            EcoDash componenteEco = fantasma.AddComponent<EcoDash>();
+
+            componenteEco.Ecos(
+                spriteRenderer.sprite,
+                transform.position,
+                transform.rotation,
+                transform.localScale,
+                Color.blue,
+                0.4f,
+                spriteRenderer.sortingOrder - 1
+            );
+
+            yield return new WaitForSeconds(0.08f);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (estadoActual == EstadoMarrajo.EmbestidaLarga || estadoActual == EstadoMarrajo.EmbestidaExplosivo)
         {
-            // Detecta la sala sólida
             if (!collision.isTrigger && collision.gameObject.layer == LayerMask.NameToLayer("Salas"))
             {
-                // Iniciamos el proceso de Frenazo/Stun de forma segura mediante una Corrutina
-                rb.linearVelocity = Vector2.zero; // Frenazo inmediato al chocar
+                haChocadoPared = true;
                 StartCoroutine(Frenazo());
             }
-        }
-    }
-
-    private void GirarSprite()
-    {
-        if (rb != null)
-        {
-            GirarSprite(rb.linearVelocity);
         }
     }
 
@@ -419,21 +379,17 @@ public class BossMako : MonoBehaviour, IVidaBoss
     {
         if (direccion.sqrMagnitude < 0.001f) return;
 
-        // 1. Calculamos el ángulo libre exacto sin restringir a intervalos de 45°
         float anguloZ = Mathf.Atan2(direccion.y, direccion.x) * Mathf.Rad2Deg;
 
-        // 2. Invertimos el Flip en X para adaptarse al sprite volteado
         Vector3 escala = transform.localScale;
         escala.x = (direccion.x < 0) ? Mathf.Abs(escala.x) : -Mathf.Abs(escala.x);
         transform.localScale = escala;
 
-        // Ajuste de ángulo para mantener la coherencia al voltear en X
         if (direccion.x < 0) anguloZ += 180f;
 
         transform.localEulerAngles = new Vector3(0f, 0f, anguloZ);
     }
 
-    // --- DAÑO Y MUERTE ---
     public void RecibirDano(float dano)
     {
         vidaActual -= dano;
@@ -456,7 +412,10 @@ public class BossMako : MonoBehaviour, IVidaBoss
 
     public void Morir()
     {
+        if (muerteNotificada) return;
+        muerteNotificada = true;
         Debug.Log("El Boss Marrajo ha sido derrotado.");
+        OnBossMuerto?.Invoke();
         Destroy(gameObject);
     }
 }

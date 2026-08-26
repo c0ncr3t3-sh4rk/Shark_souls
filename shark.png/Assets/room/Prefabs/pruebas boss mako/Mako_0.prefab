@@ -280,7 +280,7 @@ MonoBehaviour:
   velocidadEmbestidaLarga: 50
   danoEmbestidaLarga: 2
   nEmbestidasMaximas: 3
-  velocidadEmbestidaExplosiva: 20
+  velocidadEmbestidaExplosiva: 70
   danoEmbestidaExplosiva: 3
   danoExplosiones: 5
   hitboxSierra: {fileID: 869053338610367118}
