@@ -66,8 +66,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.05906452, y: 0}
-  m_Radius: 9
+  m_Offset: {x: -0.059063848, y: 0}
+  m_Radius: 5.402156
 --- !u!1 &1873895538544983843
 GameObject:
   m_ObjectHideFlags: 0
@@ -168,8 +168,8 @@ Transform:
   m_GameObject: {fileID: 4083306669410988412}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -37.1347, y: -1.6931, z: -1}
-  m_LocalScale: {x: 0.5342031, y: 0.36960104, z: 0.44546348}
+  m_LocalPosition: {x: 11.7794, y: 1.0064, z: 0}
+  m_LocalScale: {x: 0.65888613, y: 0.45586592, z: 0.54943466}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 400823323331856464}
@@ -279,26 +279,22 @@ MonoBehaviour:
   vidaActual: 0
   velocidadEmbestidaLarga: 50
   danoEmbestidaLarga: 2
-  nEmbestidasMaximas: 3
   velocidadEmbestidaExplosiva: 70
   danoEmbestidaExplosiva: 3
-  danoExplosiones: 5
   hitboxSierra: {fileID: 869053338610367118}
   danoSierra: 1
   tiempoSierra: 2
   velocidadRotacionSierra: 3240
-  spriteTransform: {fileID: 2363591203675084288}
-  danoCorteV: 2
-  velocidadCorteV: 20
-  nCortes: 5
   velocidadSalida: 30
-  distanciaFueraCamara: 12
   lineaTelegrafiado: {fileID: 800951621364244698}
-  jugador: {fileID: 0}
   estadoActual: 0
   faseActual: 1
-  colisionPared: {fileID: 5902232532966361156}
   tiempoFrenazo: 1
+  jugador: {fileID: 0}
+  colisionPared: {fileID: 5902232532966361156}
+  Hijos:
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!70 &808261494824874098
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

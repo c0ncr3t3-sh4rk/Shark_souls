@@ -36,20 +36,22 @@ public class BossMako : MonoBehaviour, IVidaBoss
 
     [Header("Salida de Pantalla")]
     public float velocidadSalida = 30f;
-
     public LineRenderer lineaTelegrafiado;
 
     [Header("General")]
-    public Transform jugador;
-    private Rigidbody2D rb;
     public EstadoMarrajo estadoActual;
     public int faseActual = 1;
+    public float tiempoFrenazo = 1f;
+
+    [Header("Referencias")]
+    public Transform jugador;
+    private Rigidbody2D rb;
     private PuntoEmbestida[] puntosDeEntrada;
     private BossUtils bossUtils;
     private Coroutine bucleIA;
     private bool muerteNotificada;
     public GameObject colisionPared;
-    public float tiempoFrenazo = 1f;
+    public MiniMako[] Hijos = new MiniMako[2];
 
     public event Action OnBossMuerto;
 
@@ -79,7 +81,11 @@ public class BossMako : MonoBehaviour, IVidaBoss
 
         bossUtils = GetComponentInParent<BossUtils>();
         if (bossUtils != null)
+        {
             puntosDeEntrada = bossUtils.GetPuntosEmbestida();
+
+            Hijos = bossUtils.GetComponentsInChildren<MiniMako>();
+        }
     }
 
     private void Start()
@@ -102,11 +108,11 @@ public class BossMako : MonoBehaviour, IVidaBoss
     {
         while (vidaActual > 0)
         {
-            if (faseActual == 1)
-            {
-                float rand = UnityEngine.Random.value;
-                float distancia = Vector2.Distance(transform.position, jugador.position);
+            float rand = UnityEngine.Random.value;
+            float distancia = Vector2.Distance(transform.position, jugador.position);
 
+            if (faseActual == 1) //FASE UNO <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+            {
                 // --- ATAQUE SIERRA (Cerca del jugador) ---
                 if (distancia < 4f && rand < 0.6f)
                 {
@@ -152,9 +158,52 @@ public class BossMako : MonoBehaviour, IVidaBoss
                     }
                 }
             }
-            else if (faseActual == 2)
+            else if (faseActual == 2) // FASE DOS <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
             {
-                yield return null;
+                // --- ATAQUE SIERRA (Cerca del jugador) ---
+                if (distancia < 4f && rand < 0.6f)
+                {
+                    nMismoAtaque = 0; // Reiniciamos el contador si hace sierra
+                    yield return StartCoroutine(AtaqueSierra());
+                }
+                // --- EMBESTIDA EXPLOSIVA ---
+                else if (rand < 0.4f)
+                {
+                    if (estadoActual == EstadoMarrajo.EmbestidaExplosivo)
+                        nMismoAtaque++;
+                    else 
+                        nMismoAtaque = 1;
+
+                    // Si se ha repetido demasiado, forzamos la Embestida Larga
+                    if (nMismoAtaque > 2)
+                    {
+                        nMismoAtaque = 1;
+                        yield return StartCoroutine(AtaqueEmbestidaLarga());
+                    }
+                    else
+                    {
+                        yield return StartCoroutine(AtaqueEmbestidaexplosiva());
+                    }
+                }
+                // --- EMBESTIDA LARGA ---
+                else
+                {
+                    if (estadoActual == EstadoMarrajo.EmbestidaLarga)
+                        nMismoAtaque++;
+                    else 
+                        nMismoAtaque = 1;
+
+                    // Si se ha repetido demasiado, forzamos la Embestida Explosiva
+                    if (nMismoAtaque > 2)
+                    {
+                        nMismoAtaque = 1;
+                        yield return StartCoroutine(AtaqueEmbestidaexplosiva());
+                    }
+                    else
+                    {
+                        yield return StartCoroutine(AtaqueEmbestidaLarga());
+                    }
+                }
             }
             else if (faseActual == 3)
             {
@@ -195,21 +244,43 @@ public class BossMako : MonoBehaviour, IVidaBoss
 
     private IEnumerator AtaqueSierra()
     {
-        estadoActual = EstadoMarrajo.Sierra;
-        yield return new WaitForSeconds(0.6f);
-        
-        if (hitboxSierra != null) hitboxSierra.SetActive(true);
-
-        float T = 0f;
-        while (T < tiempoSierra)
+        if (faseActual == 1) 
         {
-            transform.Rotate(0f, 0f, velocidadRotacionSierra * Time.deltaTime);
-            T += Time.deltaTime;
-            yield return null;
-        }
+            estadoActual = EstadoMarrajo.Sierra;
+            yield return new WaitForSeconds(0.6f);
+            
+            if (hitboxSierra != null) hitboxSierra.SetActive(true);
 
-        transform.rotation = Quaternion.identity;
-        if (hitboxSierra != null) hitboxSierra.SetActive(false);
+            float T = 0f;
+            while (T < tiempoSierra)
+            {
+                transform.Rotate(0f, 0f, velocidadRotacionSierra * Time.deltaTime);
+                T += Time.deltaTime;
+                yield return null;
+            }
+
+            transform.rotation = Quaternion.identity;
+            if (hitboxSierra != null) hitboxSierra.SetActive(false);
+        } else if (faseActual == 2)
+        {
+            // nada q ver pero sabeis me raya mazo q en c# pongan la llave debajo yo no hago eso nunca pero me lo hace automatico y si lo pusiera como lo pongo yo siempre estaria mezclado y eso seria peor asi q terribles destinos esperan a los malparados
+
+            estadoActual = EstadoMarrajo.Sierra;
+            yield return new WaitForSeconds(0.6f);
+            
+            if (hitboxSierra != null) hitboxSierra.SetActive(true);
+
+            float T = 0f;
+            while (T < tiempoSierra)
+            {
+                transform.Rotate(0f, 0f, velocidadRotacionSierra * Time.deltaTime);
+                T += Time.deltaTime;
+                yield return null;
+            }
+
+            transform.rotation = Quaternion.identity;
+            if (hitboxSierra != null) hitboxSierra.SetActive(false);
+        }
     }
 
     private IEnumerator AtaqueEmbestidaexplosiva()
@@ -260,70 +331,73 @@ public class BossMako : MonoBehaviour, IVidaBoss
 
     private IEnumerator AtaqueEmbestidaLarga()
     {
-        if (faseActual == 1 && puntosDeEntrada != null && puntosDeEntrada.Length > 0)
+        yield return StartCoroutine(SalirDePantalla());
+
+        estadoActual = EstadoMarrajo.EmbestidaLarga;
+        nEmbestidas = UnityEngine.Random.Range(1, 4); // gente como se ponen emotes en fedora?
+
+        for (int i = 0; i < nEmbestidas; i++)
         {
-            yield return StartCoroutine(SalirDePantalla());
-
-            estadoActual = EstadoMarrajo.EmbestidaLarga;
-            nEmbestidas = UnityEngine.Random.Range(1, 4);
-
-            for (int i = 0; i < nEmbestidas; i++)
-            {
-                PuntoEmbestida P = puntosDeEntrada[UnityEngine.Random.Range(0, puntosDeEntrada.Length)];
-                transform.position = P.punto.position;
-
-                Vector2 dirEmbestida = P.direcciones[UnityEngine.Random.Range(0, P.direcciones.Length)];
-                GirarSprite(dirEmbestida);
-
-                if (lineaTelegrafiado != null)
+            if (faseActual == 2)
+                for (int e = 0; e < 2; e++)
                 {
-                    lineaTelegrafiado.enabled = true;
-                    lineaTelegrafiado.SetPosition(0, transform.position);
-                    lineaTelegrafiado.SetPosition(1, (Vector2)transform.position + (dirEmbestida * 40f));
+                    Hijos[e].UnaEmbestida();
                 }
 
-                yield return new WaitForSeconds(0.4f);
-                if (lineaTelegrafiado != null) lineaTelegrafiado.enabled = false;
+            PuntoEmbestida P = puntosDeEntrada[UnityEngine.Random.Range(0, puntosDeEntrada.Length)];
+            transform.position = P.punto.position;
 
-                StartCoroutine(ImagenesResiduales());
+            Vector2 dirEmbestida = P.direcciones[UnityEngine.Random.Range(0, P.direcciones.Length)];
+            GirarSprite(dirEmbestida);
 
-                if (i < nEmbestidas - 1)
+            if (lineaTelegrafiado != null)
+            {
+                lineaTelegrafiado.enabled = true;
+                lineaTelegrafiado.SetPosition(0, transform.position);
+                lineaTelegrafiado.SetPosition(1, (Vector2)transform.position + (dirEmbestida * 40f));
+            }
+
+            yield return new WaitForSeconds(0.4f);
+            if (lineaTelegrafiado != null) lineaTelegrafiado.enabled = false;
+
+            StartCoroutine(ImagenesResiduales());
+
+            if (i < nEmbestidas - 1)
+            {
+                float tiempoPasada = 0f;
+                float duracionPasada = 0.8f;
+
+                while (tiempoPasada < duracionPasada)
                 {
-                    float tiempoPasada = 0f;
-                    float duracionPasada = 0.8f;
-
-                    while (tiempoPasada < duracionPasada)
-                    {
-                        rb.linearVelocity = dirEmbestida * velocidadEmbestidaLarga;
-                        tiempoPasada += Time.deltaTime;
-                        yield return null;
-                    }
-
-                    rb.linearVelocity = Vector2.zero;
-                    yield return new WaitForSeconds(0.2f);
-                } 
-                else
-                {
-                    // Última embestida -> Busca la pared
-                    haChocadoPared = false;
                     rb.linearVelocity = dirEmbestida * velocidadEmbestidaLarga;
-                    yield return new WaitForSeconds(0.2f); // da tiempo a entrar a la sala
+                    tiempoPasada += Time.deltaTime;
+                    yield return null;
+                }
 
-                    if (colisionPared != null) colisionPared.SetActive(true);
+                rb.linearVelocity = Vector2.zero;
+                yield return new WaitForSeconds(0.2f);
+            } 
+            else
+            {
+                // Última embestida -> Busca la pared
+                haChocadoPared = false;
+                rb.linearVelocity = dirEmbestida * velocidadEmbestidaLarga;
+                yield return new WaitForSeconds(0.2f); // da tiempo a entrar a la sala
 
-                    // Espera con tiempo límite de 2.5s para evitar que se pille si no choca
-                    float tMax = 2.5f;
-                    float t = 0f;
-                    while (!haChocadoPared && t < tMax)
-                    {
-                        t += Time.deltaTime;
-                        yield return null;
-                    }
+                if (colisionPared != null) colisionPared.SetActive(true);
 
-                    if (enStun)
-                    {
-                        while (enStun) yield return null;
-                    }
+                // Espera con tiempo límite de 2.5s para evitar que se pille si no choca
+                float tMax = 2.5f;
+                float t = 0f;
+                while (!haChocadoPared && t < tMax)
+                {
+                    t += Time.deltaTime;
+                    yield return null;
+                }
+
+                if (enStun)
+                {
+                    while (enStun) yield return null;
                 }
             }
         }
@@ -394,7 +468,15 @@ public class BossMako : MonoBehaviour, IVidaBoss
     {
         vidaActual -= dano;
 
-        if (vidaActual <= vidaMaxima * 0.33f) faseActual = 3;
+        if (vidaActual <= vidaMaxima * 0.33f) 
+        {
+            faseActual = 3;
+
+            for (int e = 0; e < Hijos.Length; e++)
+            {
+                Hijos[e].Independizar();
+            }
+        }
         else if (vidaActual <= vidaMaxima * 0.66f) faseActual = 2;
 
         if (vidaActual <= 0)
