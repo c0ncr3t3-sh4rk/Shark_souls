@@ -61,11 +61,13 @@ public class BossUtils : MonoBehaviour
             if (descendiente != transform && descendiente.CompareTag(tagPuntosReferencia))
                 puntos.Add(descendiente);
         }
+        
+        // DESATIVAR LOS PUNTOS EN EL EDITOR :V
 
         return puntos;
     }
 
-    private Vector2[] CalcularDirecciones(Vector3 posicion, Vector3 centroSala)
+    private Vector2[] CalcularDirecciones(Vector3 posicion, Vector3 centroSala) // yanderev tiembla
     {
         Vector2 diferencia = posicion - centroSala;
 

@@ -3,7 +3,7 @@ using SharkSouls.Dungeon;
 
 namespace SharkSouls.Dungeon
 {
-    public class SalaBossTrigger : MonoBehaviour
+    public class SalaBoss : MonoBehaviour
     {
         [Header("Referencias de la Sala")]
         public SalaBase salaPadre;                  // Script SalaBase del padre

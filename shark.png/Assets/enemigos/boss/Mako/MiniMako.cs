@@ -58,7 +58,7 @@ public class MiniMako : MonoBehaviour, IVidaBoss
     // En la fase tres se desincronizan, en otras palabras cada mako va suelto
     public void Independizar() // A Puigdemont le fliparía este método
     {
-        if (CIA != null)
+        if (CIA == null)
         {
             esIndependiente = true;
             CIA = StartCoroutine(BucleEmbestidas());
