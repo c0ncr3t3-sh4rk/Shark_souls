@@ -13,7 +13,7 @@ public enum EstadoMarrajo
     Cuadricula
 }
 
-public class BossMako : MonoBehaviour, IVidaBoss
+public class BossMako : MonoBehaviour, IVidaBoss, IBoss
 {
     [Header("Vida")]
     public float vidaMaxima = 100f;

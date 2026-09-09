@@ -1,12 +1,13 @@
 using UnityEngine;
 using System.Collections;
 
-public class CarpaBoss : MonoBehaviour, IEnemigo
+public class CarpaBoss : MonoBehaviour, IEnemigo, IBoss
 {
     private enum EstadoBoss
     {
         Idle,
         AtaqueThompson,
+        AtaqueTe,
         Aturdido,
         Muerto
     }
@@ -16,6 +17,7 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
 
     [Header("Movimiento")]
     [SerializeField] private float velocidadMax = 3.5f;
+    [SerializeField] private float velocidadHuidaThompson = 2.8f;
     [SerializeField] private float distanciaDeteccionPared = 1.5f;
     [SerializeField] private LayerMask capaParedes;
 
@@ -23,7 +25,17 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
     [SerializeField] private ZonaThompson zonaThompson;
     [SerializeField] private float cooldownThompson = 10f;
     [Tooltip("Tiempo que tarda la animación de preparación antes de disparar")]
-    [SerializeField] private float tiempoPreparacion = 0.8f;
+    [SerializeField] private float tiempoPreparacion = 0.5f;
+
+    [Header("Ataque Té (Curación)")]
+    [Tooltip("Sprite que se muestra mientras el boss bebe el té")]
+    [SerializeField] private Sprite spriteTe;
+    [Tooltip("Cantidad de vida que recupera al beber el té")]
+    [SerializeField] private int curacionTe = 10;
+    [Tooltip("Duración de la animación de beber el té")]
+    [SerializeField] private float duracionTe = 3f;
+    [Tooltip("Porcentaje de vida (0-1) por debajo del cual se activa el ataque de té")]
+    [SerializeField] private float umbralVidaTe = 0.30f;
 
     [Header("Sprites")]
     [Tooltip("Sprite normal del boss (idle/patrulla)")]
@@ -37,6 +49,9 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
 
     [Header("Boss Bar")]
     [SerializeField] private BossBar bossBar;
+
+    // ---- IBoss ----
+    public event System.Action OnBossMuerto;
 
     private Rigidbody2D rb;
     private Transform jugador;
@@ -54,6 +69,17 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
     private float tiempoAturdimientoAcumulado = 0f;
     private Coroutine crAturdimiento;
     private bool ataqueEnCurso = false;
+    private float tiempoCooldownRebote = 0f;
+
+    // ---- Ataque Thompson ----
+    private bool enAtaqueThompson = false;
+    private bool disparandoThompson = false;
+
+    // ---- Ataque Té ----
+    private bool teUsado = false;
+    private bool aturdimientoPendienteThompson = false; // aturdimiento acumulado durante el Thompson
+
+    private bool combateIniciado = false;  // bloqueado hasta que SalaBoss llame a IniciarCombate
 
     private void Awake()
     {
@@ -107,6 +133,9 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
         if (spriteNormal == null && spriteRenderer != null)
             spriteNormal = spriteRenderer.sprite;
 
+        if (zonaThompson == null)
+            zonaThompson = GetComponentInChildren<ZonaThompson>(true);
+
         // Comprobación de seguridad: Si el usuario arrastró un prefab en vez del objeto de la escena
         if (zonaThompson != null && !zonaThompson.gameObject.scene.IsValid())
         {
@@ -114,6 +143,20 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
             zonaThompson.transform.localPosition = Vector3.zero;
         }
 
+        if (zonaThompson != null)
+        {
+            zonaThompson.Configurar(transform);
+        }
+
+        tiempoProximoAtaque = Time.time + tiempoEntreAtaquesMin;
+    }
+
+    // ===================== IBOSS =====================
+
+    /// <summary>Activa el boss e inicia la IA. Llamado por SalaBoss.</summary>
+    public void IniciarCombate()
+    {
+        combateIniciado = true;
         tiempoProximoAtaque = Time.time + tiempoEntreAtaquesMin;
     }
 
@@ -121,25 +164,53 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
     {
         if (vidaEnemigo != null)
             vidaEnemigo.OnMuerto -= OnMuerte;
+
+        if (zonaThompson != null && zonaThompson.gameObject != null)
+            Destroy(zonaThompson.gameObject);
     }
 
     private void Update()
     {
-        if (jugador == null) return;
+        if (!combateIniciado) return;
+
+        if (jugador == null)
+        {
+            GameObject p = GameObject.FindWithTag("Player");
+            if (p != null) jugador = p.transform;
+            if (jugador == null) return;
+        }
+
         if (estadoActual == EstadoBoss.Muerto) return;
         if (estadoActual == EstadoBoss.Aturdido) return;
+        if (estadoActual == EstadoBoss.AtaqueTe) return;
+        if (estadoActual == EstadoBoss.AtaqueThompson) return;
 
         if (estadoActual == EstadoBoss.Idle && !ataqueEnCurso && Time.time >= tiempoProximoAtaque)
         {
-            if (Time.time - ultimoAtaqueThompson > cooldownThompson)
+            // Comprobar si puede usar el té (una sola vez, bajo el umbral de vida)
+            if (!teUsado && vidaEnemigo != null &&
+                (float)vidaEnemigo.VidaActual / vidaEnemigo.VidaMaxima <= umbralVidaTe)
+            {
+                IniciarAtaqueTe();
+            }
+            else if (Time.time - ultimoAtaqueThompson > cooldownThompson)
+            {
                 IniciarAtaqueThompson();
+            }
             else
+            {
                 tiempoProximoAtaque = Time.time + 1f;
+            }
         }
     }
 
     private void FixedUpdate()
     {
+        if (!combateIniciado)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
         if (estadoActual == EstadoBoss.Muerto) return;
 
         switch (estadoActual)
@@ -149,11 +220,22 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
                 break;
 
             case EstadoBoss.Aturdido:
+            case EstadoBoss.AtaqueTe:
                 rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 6f);
                 break;
 
             case EstadoBoss.AtaqueThompson:
-                rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 6f);
+                if (!enAtaqueThompson)
+                {
+                    // Preparación previa (0.5s): retrocede alejándose del jugador mientras lo mira
+                    MoverseAlejandoseDelJugador();
+                }
+                else
+                {
+                    // Ataque en curso (warning y disparo): COMPLETAMENTE ESTÁTICO
+                    // No se mueve aunque el jugador lo golpee o empuje
+                    rb.linearVelocity = Vector2.zero;
+                }
                 break;
         }
     }
@@ -164,7 +246,10 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
     {
         estadoActual = EstadoBoss.AtaqueThompson;
         ataqueEnCurso = true;
+        enAtaqueThompson = false;
+        disparandoThompson = false;
         ultimoAtaqueThompson = Time.time;
+        aturdimientoPendienteThompson = false;
         StartCoroutine(SecuenciaThompson());
     }
 
@@ -176,27 +261,176 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
             yield break;
         }
 
+        // --- FASE DE PREPARACIÓN (0.5s) ---
+        // Mirar hacia el jugador y empezar a retroceder alejándose
         Vector2 dirAlJugador = ((Vector2)jugador.position - (Vector2)transform.position).normalized;
-        GirarSprite(dirAlJugador);
-
-        // --- Animación de preparación: cambiar sprite y hacer un pequeño "temblor" ---
-        rb.linearVelocity = Vector2.zero;
+        GirarSprite(dirAlJugador, suave: true);
 
         if (spriteRenderer != null && spritePreparacion != null)
             spriteRenderer.sprite = spritePreparacion;
 
-        // Esperar el tiempo de preparación (la animación/sprite ya nos da el feedback visual)
+        // Esperar el tiempo de preparación (0.5s)
         yield return new WaitForSeconds(tiempoPreparacion);
 
-        // --- Lanzar el ataque Thompson ---
-        zonaThompson.IniciarAtaque(dirAlJugador, () =>
-        {
-            // Restaurar sprite normal al terminar
-            if (spriteRenderer != null && spriteNormal != null)
-                spriteRenderer.sprite = spriteNormal;
+        // --- COMIENZA EL ATAQUE ---
+        // 1. Obtener la dirección fija hacia el jugador en este instante preciso
+        Vector2 dirAtaque = ((Vector2)jugador.position - (Vector2)transform.position).normalized;
 
-            FinalizarAtaque();
-        });
+        // 2. Bloquear la mirada en esa dirección: A PARTIR DE AQUÍ NO SIGUE AL JUGADOR CON LA MIRADA
+        GirarSprite(dirAtaque, suave: true);
+
+        // 3. Bloquear movimiento del boss: se queda completamente estático
+        enAtaqueThompson = true;
+        rb.linearVelocity = Vector2.zero;
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+
+        // 4. Lanzar el ataque Thompson con la dirección fija
+        zonaThompson.IniciarAtaque(
+            dirAtaque,
+            onDisparoIniciado: () =>
+            {
+                disparandoThompson = true;
+                rb.linearVelocity = Vector2.zero;
+            },
+            onAtaqueTerminado: () =>
+            {
+                enAtaqueThompson = false;
+                disparandoThompson = false;
+                if (rb != null)
+                    rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+
+                // Restaurar sprite normal al terminar
+                if (spriteRenderer != null && spriteNormal != null)
+                    spriteRenderer.sprite = spriteNormal;
+
+                FinalizarAtaque();
+
+                // Si recibió hits durante el Thompson, aplicar aturdimiento ahora
+                if (aturdimientoPendienteThompson && tiempoAturdimientoAcumulado > 0f)
+                {
+                    aturdimientoPendienteThompson = false;
+                    if (crAturdimiento == null)
+                        crAturdimiento = StartCoroutine(RutinaAturdimiento());
+                }
+            }
+        );
+    }
+
+    /// <summary>
+    /// Durante el ataque Thompson, el boss retrocede alejándose del jugador sin colisionar con paredes
+    /// y deslizándose a lo largo de los muros si no puede retroceder más.
+    /// </summary>
+    private void MoverseAlejandoseDelJugador()
+    {
+        if (jugador == null) return;
+
+        Vector2 posActual = transform.position;
+        Vector2 posJugador = jugador.position;
+        Vector2 dirAlJugador = (posJugador - posActual).normalized;
+        Vector2 dirHuida = -dirAlJugador;
+
+        // Mantener al boss mirando y apuntando suavemente hacia el jugador
+        GirarSprite(dirAlJugador, suave: true);
+
+        // Buscar una dirección que se aleje del jugador esquivando paredes
+        Vector2 dirEscape = BuscarDireccionHuidaSinParedes(posActual, dirHuida);
+
+        if (dirEscape != Vector2.zero)
+        {
+            Vector2 velDeseada = dirEscape * velocidadHuidaThompson;
+            rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, velDeseada, Time.fixedDeltaTime * 4f);
+        }
+        else
+        {
+            // Desacelera suavemente sin bloquear fuerzas externas (empujones/golpes)
+            rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, Vector2.zero, Time.fixedDeltaTime * 2f);
+        }
+    }
+
+    private Vector2 BuscarDireccionHuidaSinParedes(Vector2 origen, Vector2 dirDeseada)
+    {
+        // 1. Probar huida directa si no hay pared cerca
+        RaycastHit2D hitDirecto = Physics2D.CircleCast(origen, 0.6f, dirDeseada, distanciaDeteccionPared, capaParedes);
+        if (hitDirecto.collider == null)
+        {
+            return dirDeseada;
+        }
+
+        // 2. Si hay pared detrás, deslizarse por la tangente que aleje más del jugador
+        Vector2 normalPared = hitDirecto.normal;
+        Vector2 tan1 = new Vector2(-normalPared.y, normalPared.x);
+        Vector2 tan2 = -tan1;
+
+        Vector2 posJugador = (jugador != null) ? (Vector2)jugador.position : origen;
+        float d1 = Vector2.Distance(origen + tan1, posJugador);
+        float d2 = Vector2.Distance(origen + tan2, posJugador);
+
+        Vector2 mejorTan = d1 >= d2 ? tan1 : tan2;
+        Vector2 segundaTan = d1 >= d2 ? tan2 : tan1;
+
+        RaycastHit2D hitTan1 = Physics2D.CircleCast(origen, 0.6f, mejorTan, 1.2f, capaParedes);
+        if (hitTan1.collider == null)
+        {
+            return mejorTan;
+        }
+
+        RaycastHit2D hitTan2 = Physics2D.CircleCast(origen, 0.6f, segundaTan, 1.2f, capaParedes);
+        if (hitTan2.collider == null)
+        {
+            return segundaTan;
+        }
+
+        // 3. Probar abanico de ángulos intermedios
+        float[] angulos = { 30f, -30f, 60f, -60f, 90f, -90f };
+        for (int i = 0; i < angulos.Length; i++)
+        {
+            float rad = angulos[i] * Mathf.Deg2Rad;
+            Vector2 dirCand = new Vector2(
+                dirDeseada.x * Mathf.Cos(rad) - dirDeseada.y * Mathf.Sin(rad),
+                dirDeseada.x * Mathf.Sin(rad) + dirDeseada.y * Mathf.Cos(rad)
+            ).normalized;
+
+            RaycastHit2D hitCand = Physics2D.CircleCast(origen, 0.6f, dirCand, 1.0f, capaParedes);
+            if (hitCand.collider == null)
+            {
+                return dirCand;
+            }
+        }
+
+        return Vector2.zero;
+    }
+
+    // ===================== TÉ (CURACIÓN) =====================
+
+    private void IniciarAtaqueTe()
+    {
+        teUsado = true;
+        estadoActual = EstadoBoss.AtaqueTe;
+        ataqueEnCurso = true;
+        StartCoroutine(SecuenciaTe());
+    }
+
+    private IEnumerator SecuenciaTe()
+    {
+        // Parar en seco
+        rb.linearVelocity = Vector2.zero;
+
+        // Cambiar al sprite del té
+        if (spriteRenderer != null && spriteTe != null)
+            spriteRenderer.sprite = spriteTe;
+
+        // Esperar la duración de la "animación" de beber
+        yield return new WaitForSeconds(duracionTe);
+
+        // Curar al boss
+        if (vidaEnemigo != null)
+            vidaEnemigo.Curar(curacionTe);
+
+        // Restaurar sprite normal
+        if (spriteRenderer != null && spriteNormal != null)
+            spriteRenderer.sprite = spriteNormal;
+
+        FinalizarAtaque();
     }
 
     // ===================== PATRULLA =====================
@@ -221,19 +455,25 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
                 {
                     direccion = Random.insideUnitCircle.normalized;
                 }
-                tiempoLimite = Random.Range(1f, 3f);
+                tiempoLimite = Random.Range(1.5f, 3f);
             }
             else
             {
-                tiempoLimite = Random.Range(0.5f, 1.5f);
+                tiempoLimite = Random.Range(0.4f, 1f);
             }
         }
 
         if (estaMoviendose)
         {
-            RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.5f, direccion, distanciaDeteccionPared, capaParedes);
-            if (hit.collider != null)
-                direccion = Random.insideUnitCircle.normalized;
+            if (Time.time >= tiempoCooldownRebote)
+            {
+                RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.7f, direccion, distanciaDeteccionPared, capaParedes);
+                if (hit.collider != null)
+                {
+                    direccion = Vector2.Reflect(direccion, hit.normal).normalized;
+                    tiempoCooldownRebote = Time.time + 0.35f;
+                }
+            }
         }
 
         Vector2 velocidadDeseada = estaMoviendose ? (direccion * velocidadMax) : Vector2.zero;
@@ -252,10 +492,13 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
 
     // ===================== UTILIDADES =====================
 
-    private void GirarSprite(Vector2 dir)
+    private void GirarSprite(Vector2 dir, bool suave = false)
     {
+        if (dir.sqrMagnitude < 0.001f) return;
+
         float anguloZ = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        anguloZ = Mathf.Round(anguloZ / 45f) * 45f;
+        if (!suave)
+            anguloZ = Mathf.Round(anguloZ / 45f) * 45f;
 
         Vector3 escala = transform.localScale;
         escala.x = (dir.x < 0) ? -Mathf.Abs(escala.x) : Mathf.Abs(escala.x);
@@ -268,6 +511,10 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
     private void FinalizarAtaque()
     {
         ataqueEnCurso = false;
+        enAtaqueThompson = false;
+        disparandoThompson = false;
+        if (rb != null)
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         estadoActual = EstadoBoss.Idle;
         tiempoProximoAtaque = Time.time + Random.Range(tiempoEntreAtaquesMin, tiempoEntreAtaquesMax);
     }
@@ -279,18 +526,24 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
         if (!gameObject.activeInHierarchy) return;
         if (estadoActual == EstadoBoss.Muerto) return;
 
-        if (ataqueEnCurso)
+        // Si el ataque Thompson está en curso NO lo interrumpimos:
+        // acumulamos el aturdimiento y lo aplicamos cuando el Thompson acabe.
+        if (estadoActual == EstadoBoss.AtaqueThompson)
         {
-            StopCoroutine(nameof(SecuenciaThompson));
+            tiempoAturdimientoAcumulado += tiempoExtra;
+            aturdimientoPendienteThompson = true;
+            return;
+        }
 
-            if (zonaThompson != null)
-                zonaThompson.DetenerAtaque();
-
-            // Restaurar sprite normal si estaba en preparación
+        // Para cualquier otro estado (Idle, AtaqueTe, etc.) sí aplicamos el aturdimiento normal
+        if (estadoActual == EstadoBoss.AtaqueTe)
+        {
+            // El té se interrumpe si recibe un golpe
+            StopCoroutine(nameof(SecuenciaTe));
             if (spriteRenderer != null && spriteNormal != null)
                 spriteRenderer.sprite = spriteNormal;
-
             ataqueEnCurso = false;
+            // No restaurar teUsado: ya gastó el té aunque lo interrumpieran
         }
 
         rb.linearVelocity = Vector2.zero;
@@ -321,12 +574,21 @@ public class CarpaBoss : MonoBehaviour, IEnemigo
     {
         estadoActual = EstadoBoss.Muerto;
         ataqueEnCurso = false;
+        enAtaqueThompson = false;
+        disparandoThompson = false;
         StopAllCoroutines();
+
+        if (rb != null)
+        {
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            rb.linearVelocity = Vector2.zero;
+        }
 
         if (zonaThompson != null)
             zonaThompson.DetenerAtaque();
 
-        rb.linearVelocity = Vector2.zero;
+        // Notificar a SalaBoss que el combate terminó
+        OnBossMuerto?.Invoke();
     }
 
     private void OnDrawGizmosSelected()

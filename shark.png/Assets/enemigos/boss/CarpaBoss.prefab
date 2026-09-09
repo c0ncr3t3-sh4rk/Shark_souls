@@ -16,9 +16,9 @@ GameObject:
   - component: {fileID: 1140000000000000}
   - component: {fileID: 1140000000000001}
   - component: {fileID: 1140000000000002}
-  m_Layer: 8
+  m_Layer: 13
   m_Name: CarpaBoss
-  m_TagString: Enemigo
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -211,8 +211,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VidaEnemigo
   vidaMaxima: 50
-  sangre: {fileID: 0}
-  sangreMuerte: {fileID: 0}
+  efectoMuerte: {fileID: 0}
   salaAsignada: {fileID: 0}
   costePresupuesto: 50
   prefabOrigen: {fileID: 0}
@@ -237,6 +236,10 @@ MonoBehaviour:
   zonaThompson: {fileID: 1140000000000003}
   cooldownThompson: 10
   tiempoPreparacion: 0.8
+  spriteTe: {fileID: 0}
+  curacionTe: 100
+  duracionTe: 3
+  umbralVidaTe: 0.3
   spriteNormal: {fileID: 0}
   spritePreparacion: {fileID: 0}
   tiempoEntreAtaquesMin: 3
@@ -270,7 +273,7 @@ GameObject:
   - component: {fileID: 1140000000000003}
   - component: {fileID: 8131567368866756665}
   - component: {fileID: 65100835854598840}
-  m_Layer: 4
+  m_Layer: 13
   m_Name: ZonaThompson
   m_TagString: Ataque
   m_Icon: {fileID: 0}

@@ -9,14 +9,8 @@ using System.Collections;
 /// y el jugador, el jugador NO recibe daño (está "cubierto").
 /// 
 /// Fases:
-/// 1. Warning: cono rojo semi-transparente parpadeante (~1.5s)
+/// 1. Warning: cono rojo semi-transparente parpadeante con líneas de límite (~1.5s)
 /// 2. Disparo: cono rojo sólido con flicker, daño continuo (~3s)
-/// 
-/// Configuración en Unity:
-/// - Necesita MeshFilter + MeshRenderer en el mismo GameObject
-/// - El MeshRenderer necesita un material (Sprites/Default funciona)
-/// - Configurar capaObstaculos con las layers que bloquean (ej. Salas)
-/// - Ajustar Sorting Layer del MeshRenderer para que esté sobre el suelo
 /// </summary>
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class ZonaThompson : MonoBehaviour
@@ -44,206 +38,301 @@ public class ZonaThompson : MonoBehaviour
     [SerializeField] private int danoPorHit = 2;
 
     [Header("Colores")]
-    [SerializeField] private Color colorWarning = new Color(1f, 0f, 0f, 0.25f);
-    [SerializeField] private Color colorDisparo = new Color(1f, 0f, 0f, 0.6f);
+    [SerializeField] private Color colorWarning = new Color(1f, 0f, 0f, 0.35f);
+    [SerializeField] private Color colorDisparo = new Color(1f, 0.1f, 0f, 0.75f);
+
+    [Header("Líneas Limitantes")]
+    [SerializeField] private LineRenderer lineaLimiteIzq;
+    [SerializeField] private LineRenderer lineaLimiteDer;
+    [SerializeField] private float grosorLineas = 0.08f;
+    [SerializeField] private Color colorLineasWarning = new Color(1f, 0.2f, 0.2f, 0.85f);
+    [SerializeField] private Color colorLineasDisparo = new Color(1f, 0.85f, 0.2f, 1f);
+
+    [Header("Sorting")]
+    [SerializeField] private string sortingLayerName = "Default";
+    [SerializeField] private int sortingOrder = 10;
 
     // --- Referencias internas ---
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
     private Mesh meshCono;
     private Transform jugador;
+    private Transform bossTransform;
 
     // --- Estado del ataque ---
     private bool ataqueActivo = false;
     private bool estaDisparando = false;
     private float anguloActual;     // Ángulo del cono elegido para este ataque
-    private float anguloBase;       // Dirección central del cono (en grados)
+    private float anguloBase;       // Dirección central del cono (en grados, fija durante el ataque)
     private float tiempoProximoDano = 0f;
+    private Color colorActual = Color.red;
 
     // --- Arrays reutilizables para evitar allocations ---
     private Vector3[] vertices;
+    private Color[] colores;
+    private Vector2[] uvs;
     private int[] triangulos;
-    private Vector2[] puntosCono;   // Puntos finales de los rayos (espacio local)
+    private Vector2[] puntosCono;
+
+    public void Configurar(Transform boss)
+    {
+        bossTransform = boss;
+        transform.SetParent(null);
+        transform.localScale = Vector3.one;
+        transform.rotation = Quaternion.identity;
+    }
 
     private void Awake()
     {
         meshFilter = GetComponent<MeshFilter>();
         meshRenderer = GetComponent<MeshRenderer>();
 
+        if (transform.parent != null)
+        {
+            bossTransform = transform.parent;
+            transform.SetParent(null);
+        }
+
+        transform.localScale = Vector3.one;
+        transform.rotation = Quaternion.identity;
+
         meshCono = new Mesh();
         meshCono.name = "ConoDañoThompson";
         meshFilter.mesh = meshCono;
 
-        // Pre-allocar arrays
+        ConfigurarMaterial();
         PrealocarArrays();
+        CrearLineasSiNoExisten();
 
-        // Empezar oculto
         meshRenderer.enabled = false;
+    }
+
+    private void ConfigurarMaterial()
+    {
+        Material baseMat = meshRenderer.sharedMaterial;
+        Material mat;
+
+        if (baseMat != null)
+        {
+            mat = new Material(baseMat);
+        }
+        else
+        {
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Unlit/Transparent");
+            if (shader == null) shader = Shader.Find("UI/Default");
+            mat = new Material(shader);
+        }
+
+        mat.name = "Mat_ZonaThompson_Procedural";
+        mat.mainTexture = Texture2D.whiteTexture;
+        mat.color = colorWarning;
+        mat.SetColor("_Color", colorWarning);
+
+        if (mat.HasProperty("_RendererColor"))
+            mat.SetColor("_RendererColor", Color.white);
+        if (mat.HasProperty("_Flip"))
+            mat.SetVector("_Flip", Vector4.one);
+
+        mat.renderQueue = 3000;
+        meshRenderer.material = mat;
+        meshRenderer.sortingLayerName = sortingLayerName;
+        meshRenderer.sortingOrder = sortingOrder;
+    }
+
+    private void CrearLineasSiNoExisten()
+    {
+        if (lineaLimiteIzq == null)
+        {
+            GameObject goIzq = new GameObject("LineaLimiteIzq");
+            goIzq.transform.SetParent(transform);
+            lineaLimiteIzq = goIzq.AddComponent<LineRenderer>();
+            ConfigurarLineRenderer(lineaLimiteIzq);
+        }
+        if (lineaLimiteDer == null)
+        {
+            GameObject goDer = new GameObject("LineaLimiteDer");
+            goDer.transform.SetParent(transform);
+            lineaLimiteDer = goDer.AddComponent<LineRenderer>();
+            ConfigurarLineRenderer(lineaLimiteDer);
+        }
+    }
+
+    private void ConfigurarLineRenderer(LineRenderer lr)
+    {
+        lr.useWorldSpace = true;
+        lr.startWidth = grosorLineas;
+        lr.endWidth = grosorLineas;
+        lr.positionCount = 2;
+        lr.sortingLayerName = sortingLayerName;
+        lr.sortingOrder = sortingOrder + 1;
+
+        Shader s = Shader.Find("Sprites/Default");
+        if (s == null) s = Shader.Find("Unlit/Color");
+        Material mat = new Material(s);
+        mat.mainTexture = Texture2D.whiteTexture;
+        mat.color = Color.white;
+        if (mat.HasProperty("_RendererColor"))
+            mat.SetColor("_RendererColor", Color.white);
+
+        lr.material = mat;
+        lr.enabled = false;
     }
 
     private void PrealocarArrays()
     {
-        // Vértices: 1 centro (boss) + cantidadRayos puntos del arco
         vertices = new Vector3[cantidadRayos + 1];
+        colores = new Color[cantidadRayos + 1];
+        uvs = new Vector2[cantidadRayos + 1];
         puntosCono = new Vector2[cantidadRayos];
 
-        // Triángulos: cantidadRayos - 1 triángulos (abanico)
-        triangulos = new int[(cantidadRayos - 1) * 3];
+        for (int i = 0; i <= cantidadRayos; i++)
+        {
+            colores[i] = Color.white;
+            uvs[i] = new Vector2(0.5f, 0.5f);
+        }
+
+        // Doble cara para que nunca sufra de backface culling
+        triangulos = new int[(cantidadRayos - 1) * 6];
         for (int i = 0; i < cantidadRayos - 1; i++)
         {
-            triangulos[i * 3] = 0;           // Centro
-            triangulos[i * 3 + 1] = i + 1;   // Punto actual del arco
-            triangulos[i * 3 + 2] = i + 2;   // Siguiente punto del arco
+            // Cara 1
+            triangulos[i * 6] = 0;
+            triangulos[i * 6 + 1] = i + 1;
+            triangulos[i * 6 + 2] = i + 2;
+
+            // Cara 2 (inversa)
+            triangulos[i * 6 + 3] = 0;
+            triangulos[i * 6 + 4] = i + 2;
+            triangulos[i * 6 + 5] = i + 1;
         }
     }
 
     /// <summary>
-    /// Inicia la secuencia del ataque Thompson.
-    /// Llamar desde CarpaBoss con la dirección hacia el jugador.
+    /// Inicia el ataque con una dirección fija (no sigue al jugador durante el ataque).
     /// </summary>
-    /// <param name="direccionAlJugador">Dirección normalizada del boss al jugador</param>
-    /// <param name="onAtaqueTerminado">Callback cuando el ataque termina</param>
-    public void IniciarAtaque(Vector2 direccionAlJugador, System.Action onAtaqueTerminado = null)
+    public void IniciarAtaque(Vector2 direccionFijada, System.Action onDisparoIniciado = null, System.Action onAtaqueTerminado = null)
     {
-        // Buscar jugador
         if (jugador == null)
         {
             GameObject objJugador = GameObject.FindWithTag("Player");
             if (objJugador != null) jugador = objJugador.transform;
         }
 
-        // Elegir ángulo aleatorio del cono
-        anguloActual = Random.Range(anguloConoMin, anguloConoMax);
+        if (bossTransform == null && transform.parent != null)
+        {
+            bossTransform = transform.parent;
+            transform.SetParent(null);
+        }
 
-        // Calcular dirección central en grados
-        anguloBase = Mathf.Atan2(direccionAlJugador.y, direccionAlJugador.x) * Mathf.Rad2Deg;
+        transform.localScale = Vector3.one;
+        transform.rotation = Quaternion.identity;
+
+        anguloActual = Random.Range(anguloConoMin, anguloConoMax);
+        // Fijar dirección: a partir de aquí NO sigue al jugador con la mirada
+        anguloBase = Mathf.Atan2(direccionFijada.y, direccionFijada.x) * Mathf.Rad2Deg;
 
         gameObject.SetActive(true);
         meshRenderer.enabled = true;
 
-        StartCoroutine(SecuenciaAtaque(onAtaqueTerminado));
+        StopAllCoroutines();
+        StartCoroutine(SecuenciaAtaque(onDisparoIniciado, onAtaqueTerminado));
     }
 
-    /// <summary>
-    /// Sobrecarga de compatibilidad: sin dirección (usa la última calculada).
-    /// Mantenida por si CarpaBoss la llama sin parámetros.
-    /// </summary>
     public void IniciarAtaque(System.Action onAtaqueTerminado = null)
     {
-        // Calcular dirección al jugador desde la posición del padre (el boss)
-        if (jugador == null)
-        {
-            GameObject objJugador = GameObject.FindWithTag("Player");
-            if (objJugador != null) jugador = objJugador.transform;
-        }
-
+        Vector2 origen = bossTransform != null ? (Vector2)bossTransform.position : (Vector2)transform.position;
         Vector2 dir = Vector2.right;
         if (jugador != null)
         {
-            dir = ((Vector2)jugador.position - (Vector2)transform.parent.position).normalized;
+            dir = ((Vector2)jugador.position - origen).normalized;
         }
 
-        IniciarAtaque(dir, onAtaqueTerminado);
+        IniciarAtaque(dir, null, onAtaqueTerminado);
     }
 
-    private IEnumerator SecuenciaAtaque(System.Action onTerminado)
+    private IEnumerator SecuenciaAtaque(System.Action onDisparo, System.Action onTerminado)
     {
         ataqueActivo = true;
         estaDisparando = false;
 
-        // ========================================
-        // FASE 1: WARNING (visual sin daño)
-        // ========================================
+        // FASE 1: WARNING (cono rojo parpadeante con dirección fija telegrafiando el ataque)
         float tWarning = 0f;
         while (tWarning < tiempoWarning)
         {
             tWarning += Time.deltaTime;
 
-            // Reconstruir el mesh cada frame para reflejar cambios en obstáculos
-            ReconstruirMesh();
+            if (bossTransform == null)
+            {
+                DetenerAtaque();
+                yield break;
+            }
 
-            // Parpadeo de warning
-            float alpha = Mathf.Lerp(0.1f, 0.35f, Mathf.PingPong(tWarning * 4f, 1f));
-            SetColorMesh(new Color(1f, 0f, 0f, alpha));
+            // Parpadeo visual en la dirección fijada
+            float alpha = Mathf.Lerp(colorWarning.a * 0.5f, colorWarning.a, Mathf.PingPong(tWarning * 5f, 1f));
+            SetColorMesh(new Color(colorWarning.r, colorWarning.g, colorWarning.b, alpha));
+
+            ReconstruirMesh();
 
             yield return null;
         }
 
-        // ========================================
-        // FASE 2: DISPARO (visual + daño)
-        // ========================================
+        // FASE 2: DISPARO (cono sólido con flicker y daño en la dirección fija)
         estaDisparando = true;
         tiempoProximoDano = 0f;
+        onDisparo?.Invoke();
 
         float tDisparo = 0f;
         while (tDisparo < tiempoDisparo)
         {
             tDisparo += Time.deltaTime;
 
-            // Reconstruir mesh (los obstáculos podrían moverse, aunque raro)
+            if (bossTransform == null)
+            {
+                DetenerAtaque();
+                yield break;
+            }
+
             ReconstruirMesh();
 
-            // Intentar dañar al jugador
             if (Time.time >= tiempoProximoDano)
             {
                 IntentarDanarJugador();
                 tiempoProximoDano = Time.time + intervaloDano;
             }
 
-            // Efecto visual: flicker rojo/naranja durante el disparo
-            float flicker = Random.Range(0.45f, 0.75f);
-            SetColorMesh(new Color(1f, Random.Range(0f, 0.15f), 0f, flicker));
+            float flicker = Random.Range(colorDisparo.a * 0.7f, colorDisparo.a);
+            SetColorMesh(new Color(colorDisparo.r, colorDisparo.g, colorDisparo.b, flicker));
 
             yield return null;
         }
 
-        // ========================================
         // FIN DEL ATAQUE
-        // ========================================
         ataqueActivo = false;
         estaDisparando = false;
         meshRenderer.enabled = false;
-        meshCono.Clear();
+        if (meshCono != null) meshCono.Clear();
+        if (lineaLimiteIzq != null) lineaLimiteIzq.enabled = false;
+        if (lineaLimiteDer != null) lineaLimiteDer.enabled = false;
         gameObject.SetActive(false);
 
         onTerminado?.Invoke();
     }
 
-    // ========================================
-    // MESH PROCEDURAL
-    // ========================================
-
-    /// <summary>
-    /// Reconstruye el mesh del cono lanzando rayos y detectando obstáculos.
-    /// Los obstáculos crean "sombras" (huecos) en el cono.
-    /// </summary>
     private void ReconstruirMesh()
     {
-        // Posición del boss (el padre de este GameObject)
-        Vector2 origen = transform.parent != null
-            ? (Vector2)transform.parent.position
+        Vector2 origen = bossTransform != null
+            ? (Vector2)bossTransform.position
             : (Vector2)transform.position;
 
-        // Colocar este GO en la posición del boss y anular rotación y escala del padre
-        transform.position = (Vector3)origen;
+        transform.position = new Vector3(origen.x, origen.y, -0.05f);
         transform.rotation = Quaternion.identity;
-        
-        if (transform.parent != null)
-        {
-            Vector3 pScale = transform.parent.localScale;
-            transform.localScale = new Vector3(
-                1f / (pScale.x != 0 ? pScale.x : 1f),
-                1f / (pScale.y != 0 ? pScale.y : 1f),
-                1f / (pScale.z != 0 ? pScale.z : 1f)
-            );
-        }
+        transform.localScale = Vector3.one;
 
-        // Calcular el rango angular del cono
         float anguloInicio = anguloBase - anguloActual / 2f;
         float anguloFin = anguloBase + anguloActual / 2f;
         float paso = (anguloFin - anguloInicio) / (cantidadRayos - 1);
 
-        // Vértice 0 = centro (boss), en espacio local es (0,0,0)
         vertices[0] = Vector3.zero;
 
         for (int i = 0; i < cantidadRayos; i++)
@@ -252,55 +341,68 @@ public class ZonaThompson : MonoBehaviour
             float rad = angulo * Mathf.Deg2Rad;
             Vector2 direccionRayo = new Vector2(Mathf.Cos(rad), Mathf.Sin(rad));
 
-            // Lanzar raycast desde el boss en esta dirección
-            RaycastHit2D hit = Physics2D.Raycast(origen, direccionRayo, distanciaMax, capaObstaculos);
+            // RaycastAll para ignorar triggers (límites de cámara, salas, etc.) y no colapsar a distancia 0
+            RaycastHit2D[] hits = Physics2D.RaycastAll(origen, direccionRayo, distanciaMax, capaObstaculos);
+            float distanciaFinal = distanciaMax;
 
-            float distanciaFinal;
-            if (hit.collider != null)
+            for (int j = 0; j < hits.Length; j++)
             {
-                // El rayo chocó con un obstáculo: el punto final es el impacto
-                distanciaFinal = hit.distance;
-            }
-            else
-            {
-                // Sin obstáculo: alcance máximo
-                distanciaFinal = distanciaMax;
+                RaycastHit2D h = hits[j];
+                if (h.collider == null) continue;
+                if (h.collider.isTrigger) continue; // ¡Triggers nunca bloquean!
+                if (bossTransform != null && (h.collider.transform == bossTransform || h.collider.transform.IsChildOf(bossTransform))) continue;
+                if (h.distance < 0.15f) continue;
+
+                distanciaFinal = h.distance;
+                break;
             }
 
-            // Guardar punto en espacio local (relativo al origen/boss)
             Vector2 puntoLocal = direccionRayo * distanciaFinal;
             vertices[i + 1] = new Vector3(puntoLocal.x, puntoLocal.y, 0f);
             puntosCono[i] = puntoLocal;
         }
 
-        // Aplicar al mesh
         meshCono.Clear();
         meshCono.vertices = vertices;
+        meshCono.uv = uvs;
+        meshCono.colors = colores;
         meshCono.triangles = triangulos;
         meshCono.RecalculateNormals();
-    }
+        meshCono.RecalculateBounds();
 
-    /// <summary>
-    /// Cambia el color del material del mesh.
-    /// </summary>
-    private void SetColorMesh(Color color)
-    {
-        if (meshRenderer != null && meshRenderer.material != null)
+        // Actualizar líneas limitantes exteriores
+        if (lineaLimiteIzq != null)
         {
-            meshRenderer.material.color = color;
+            lineaLimiteIzq.enabled = true;
+            lineaLimiteIzq.SetPosition(0, (Vector3)origen);
+            lineaLimiteIzq.SetPosition(1, (Vector3)(origen + (Vector2)vertices[1]));
+            Color col = estaDisparando ? colorLineasDisparo : colorLineasWarning;
+            lineaLimiteIzq.startColor = col;
+            lineaLimiteIzq.endColor = col;
+        }
+        if (lineaLimiteDer != null)
+        {
+            lineaLimiteDer.enabled = true;
+            lineaLimiteDer.SetPosition(0, (Vector3)origen);
+            lineaLimiteDer.SetPosition(1, (Vector3)(origen + (Vector2)vertices[cantidadRayos]));
+            Color col = estaDisparando ? colorLineasDisparo : colorLineasWarning;
+            lineaLimiteDer.startColor = col;
+            lineaLimiteDer.endColor = col;
         }
     }
 
-    // ========================================
-    // SISTEMA DE DAÑO CON COBERTURA
-    // ========================================
+    private void SetColorMesh(Color color)
+    {
+        colorActual = color;
+        if (meshRenderer != null && meshRenderer.material != null)
+        {
+            meshRenderer.material.color = color;
+            meshRenderer.material.SetColor("_Color", color);
+            if (meshRenderer.material.HasProperty("_RendererColor"))
+                meshRenderer.material.SetColor("_RendererColor", Color.white);
+        }
+    }
 
-    /// <summary>
-    /// Comprueba si el jugador está en la zona de daño y no está cubierto
-    /// por un obstáculo. Usa dos comprobaciones:
-    /// 1. ¿Está dentro del ángulo del cono?
-    /// 2. ¿Hay línea de visión directa (sin obstáculos entre boss y jugador)?
-    /// </summary>
     private void IntentarDanarJugador()
     {
         if (jugador == null) return;
@@ -308,42 +410,38 @@ public class ZonaThompson : MonoBehaviour
         SaludTiburon salud = jugador.GetComponent<SaludTiburon>();
         if (salud == null || salud.esInvencible) return;
 
-        Vector2 origen = transform.parent != null
-            ? (Vector2)transform.parent.position
+        Vector2 origen = bossTransform != null
+            ? (Vector2)bossTransform.position
             : (Vector2)transform.position;
 
         Vector2 dirAlJugador = (Vector2)jugador.position - origen;
         float distanciaJugador = dirAlJugador.magnitude;
 
-        // ---- Comprobación 1: ¿Está dentro del rango? ----
         if (distanciaJugador > distanciaMax) return;
 
-        // ---- Comprobación 2: ¿Está dentro del ángulo del cono? ----
         float anguloJugador = Mathf.Atan2(dirAlJugador.y, dirAlJugador.x) * Mathf.Rad2Deg;
         float diferenciaAngulo = Mathf.DeltaAngle(anguloBase, anguloJugador);
 
         if (Mathf.Abs(diferenciaAngulo) > anguloActual / 2f) return;
 
-        // ---- Comprobación 3: ¿Hay línea de visión? (no hay obstáculo en medio) ----
-        RaycastHit2D hit = Physics2D.Raycast(origen, dirAlJugador.normalized, distanciaJugador, capaObstaculos);
-
-        if (hit.collider != null)
+        // Comprobar si hay obstáculos sólidos que cubran al jugador
+        RaycastHit2D[] hits = Physics2D.RaycastAll(origen, dirAlJugador.normalized, distanciaJugador, capaObstaculos);
+        for (int i = 0; i < hits.Length; i++)
         {
-            // Hay un obstáculo entre el boss y el jugador → CUBIERTO, no dañar
+            RaycastHit2D h = hits[i];
+            if (h.collider == null) continue;
+            if (h.collider.isTrigger) continue; // Triggers no cubren
+            if (bossTransform != null && (h.collider.transform == bossTransform || h.collider.transform.IsChildOf(bossTransform))) continue;
+            if (h.collider.transform == jugador || h.collider.transform.IsChildOf(jugador)) continue;
+            if (h.distance < 0.15f) continue;
+
+            // Hay un obstáculo sólido entre boss y jugador
             return;
         }
 
-        // ---- El jugador está expuesto: DAÑO ----
         salud.RecibirDano(danoPorHit);
     }
 
-    // ========================================
-    // DETENER ATAQUE (interrupción externa)
-    // ========================================
-
-    /// <summary>
-    /// Fuerza la detención del ataque (ej. si el boss muere o es aturdido).
-    /// </summary>
     public void DetenerAtaque()
     {
         StopAllCoroutines();
@@ -352,23 +450,30 @@ public class ZonaThompson : MonoBehaviour
 
         if (meshRenderer != null) meshRenderer.enabled = false;
         if (meshCono != null) meshCono.Clear();
+        if (lineaLimiteIzq != null) lineaLimiteIzq.enabled = false;
+        if (lineaLimiteDer != null) lineaLimiteDer.enabled = false;
 
         gameObject.SetActive(false);
     }
 
-    // ========================================
-    // GIZMOS (debug en editor)
-    // ========================================
+    private void OnDestroy()
+    {
+        if (meshCono != null)
+            Destroy(meshCono);
+        if (lineaLimiteIzq != null && lineaLimiteIzq.gameObject != null)
+            Destroy(lineaLimiteIzq.gameObject);
+        if (lineaLimiteDer != null && lineaLimiteDer.gameObject != null)
+            Destroy(lineaLimiteDer.gameObject);
+    }
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
         if (!ataqueActivo) return;
 
-        Vector2 origen = transform.parent != null
-            ? (Vector2)transform.parent.position
+        Vector2 origen = bossTransform != null
+            ? (Vector2)bossTransform.position
             : (Vector2)transform.position;
 
-        // Dibujar los límites del cono
         float anguloIzq = anguloBase - anguloActual / 2f;
         float anguloDer = anguloBase + anguloActual / 2f;
 
